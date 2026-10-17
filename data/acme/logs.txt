@@ -1,0 +1,4 @@
+2026-10-17 10:01:07 WARN  payments-api  HikariPool-1 - Connection is not available, request timed out after 30000ms.
+2026-10-17 10:01:09 ERROR payments-api  POST /v1/charges 503 in 30012ms
+2026-10-17 10:02:44 ERROR payments-api  HikariPool-1 - Pool stats (total=20, active=20, idle=0, waiting=184)
+2026-10-17 10:03:30 INFO  oncall-bot    Investigator note: connection pool exhausted on primary DB.

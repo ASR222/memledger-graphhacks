@@ -1,0 +1,11 @@
+{
+  "_note": "Reference extractions for offline tests and rehearsal.",
+  "alerts.json": [
+    {"predicate": "affects_service", "value": "auth-service", "certainty": "stated", "evidence": "auth-service login error rate 35%"},
+    {"predicate": "severity", "value": "sev2", "certainty": "stated", "evidence": "declaring SEV-2"}
+  ],
+  "logs.txt": [
+    {"predicate": "root_cause", "value": "expired signing certificate", "certainty": "stated", "evidence": "signing certificate expired at 2026-10-17T00:00:00Z"},
+    {"predicate": "mitigation", "value": "rotate signing certificate", "certainty": "stated", "evidence": "Mitigation: rotate the signing certificate"}
+  ]
+}

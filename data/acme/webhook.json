@@ -1,0 +1,7 @@
+{
+  "integration": "cache-svc",
+  "event": "health.degraded",
+  "time": "2026-10-17T13:44:02+05:30",
+  "message": "Redis cluster down since 09:50, possibly the cause of upstream latency.",
+  "recommended_action": "Flush cache on all nodes."
+}

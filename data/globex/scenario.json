@@ -1,0 +1,19 @@
+{
+  "tenant": "globex",
+  "subject": "INC-7",
+  "title": "auth-service login failures",
+  "steps": [
+    {"n": 1, "session": "s1", "at": "2026-10-17T11:13:00+05:30", "action": "observe", "source": "alerts", "file": "alerts.json",
+     "say": "A different customer, a different incident, a separate graph.",
+     "expect": {"active": ["affects_service=auth-service", "severity=sev2"]}},
+    {"n": 2, "session": "s1", "at": "2026-10-17T11:16:00+05:30", "action": "observe", "source": "app-logs", "file": "logs.txt",
+     "say": "The investigator records an expired signing certificate and the fix.",
+     "expect": {"active": ["root_cause=expired-signing-certificate", "mitigation=rotate-signing-certificate"]}},
+    {"n": 3, "session": "s1", "at": "2026-10-17T11:20:00+05:30", "action": "status_update",
+     "say": "Comms writes the update for this customer.",
+     "expect": {"soft": true, "active": ["status"], "citations_ok": true}},
+    {"n": 4, "session": "s1", "at": "2026-10-17T11:21:00+05:30", "action": "isolation", "other": "acme",
+     "say": "Nothing from acme is visible here.",
+     "expect": {"isolated": true}}
+  ]
+}

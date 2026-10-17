@@ -1,0 +1,9 @@
+[
+  {
+    "time": "2026-10-17T11:12:40+05:30",
+    "source": "datadog",
+    "alert": "AuthLoginErrors",
+    "summary": "auth-service login error rate 35%",
+    "action": "declaring SEV-2"
+  }
+]

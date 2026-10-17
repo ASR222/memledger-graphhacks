@@ -1,0 +1,9 @@
+[
+  {
+    "time": "2026-10-17T09:58:12+05:30",
+    "source": "prometheus",
+    "alert": "PaymentsApiLatencyHigh",
+    "summary": "payments-api p99 latency 4.1s, error rate 12%",
+    "action": "Paging on-call, declaring SEV-1"
+  }
+]

@@ -1,0 +1,2 @@
+2026-10-17 11:13:02 ERROR auth-service  JWT signature verification failed: signing certificate expired at 2026-10-17T00:00:00Z
+2026-10-17 11:15:40 INFO  oncall-bot    Mitigation: rotate the signing certificate.

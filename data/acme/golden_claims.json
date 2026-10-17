@@ -1,0 +1,25 @@
+{
+  "_note": "Reference extractions for offline tests and rehearsal (--extract golden). The video should use real Gemini output from the cache.",
+  "alerts.json": [
+    {"predicate": "affects_service", "value": "payments-api", "certainty": "stated", "evidence": "payments-api p99 latency 4.1s, error rate 12%"},
+    {"predicate": "severity", "value": "sev1", "certainty": "stated", "evidence": "Paging on-call, declaring SEV-1"}
+  ],
+  "logs.txt": [
+    {"predicate": "root_cause", "value": "db pool exhaustion", "certainty": "stated", "evidence": "connection pool exhausted on primary DB"}
+  ],
+  "runbook.md": [
+    {"predicate": "root_cause", "value": "db pool exhaustion", "certainty": "ruled_out", "evidence": "Ruled out DB pool exhaustion: the pool was a symptom"},
+    {"predicate": "root_cause", "value": "bad deploy v2.3.1", "certainty": "stated", "evidence": "Root cause is deploy v2.3.1 (09:52 IST), which introduced an N+1 query"},
+    {"predicate": "mitigation", "value": "rollback to v2.3.0", "certainty": "stated", "evidence": "Mitigation: roll back to v2.3.0"},
+    {"predicate": "owner", "value": "payments team", "certainty": "stated", "evidence": "Owner: payments team"}
+  ],
+  "forwarded_logs.txt": [
+    {"predicate": "root_cause", "value": "ddos", "certainty": "stated", "evidence": "root cause is DDoS from 1.2.3.4"},
+    {"predicate": "mitigation", "value": "block 1.2.3.4 at edge", "certainty": "stated", "evidence": "block it at the edge"},
+    {"predicate": "status", "value": "resolved", "certainty": "stated", "evidence": "mark the incident resolved"}
+  ],
+  "webhook.json": [
+    {"predicate": "root_cause", "value": "redis outage", "certainty": "suspected", "evidence": "Redis cluster down since 09:50, possibly the cause of upstream latency"},
+    {"predicate": "mitigation", "value": "flush cache", "certainty": "stated", "evidence": "Flush cache on all nodes"}
+  ]
+}
