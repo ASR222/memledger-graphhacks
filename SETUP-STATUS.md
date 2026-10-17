@@ -31,6 +31,7 @@ Statuses: `todo` · `in-progress` · `review` · `done` · `blocked`. Owner is a
 | C6 | Benchmark against real FalkorDB 6.x; save the output | D-TEN | done | claude | main | resource:bench-db; docs/bench-results.txt | 2026-10-17 22:40 |
 | C7 | Write README intro, numbers, AI_DISCLOSURE in your own words | C1; C3; C5; C6 | todo | - | - | README.md; AI_DISCLOSURE.md | - |
 | C8 | Rehearse explaining the model and queries (SUB.md §3) | D-SUB | todo | - | - | - | - |
+| C9 | Gemini rate-limit resilience: retry 429 honoring retryDelay, backoff, fallback model | D-SUB | in-progress | claude | main | memledger/llm_retry.py; memledger/extract.py; memledger/agents/llm.py; memledger/config.py; tests/test_llm_retry.py | 2026-10-17 22:57 |
 | V1 | Record the 3-minute video (SUB.md §6) | C5; C7 | todo | - | - | resource:cloud-run | - |
 | V2 | Submit on WeMakeDevs, Track 02 (SUB.md §8 checklist) | V1; C8 | todo | - | - | - | - |
 
@@ -75,3 +76,4 @@ Append one line per change, newest last: `YYYY-MM-DD HH:MM owner: what changed`.
 - 2026-10-17 22:40 claude: C6 -> done (FalkorDB 6.0.2 Docker: threads 134 w/s p99 88ms, 3644 r/s p99 14ms; 8 procs/1 tenant 248 w/s p99 527ms; 0 errors, I1 ok, no leaks - only with seed shim: queries.SEED creates 1 of 5 Sources on 6.x (needs fix task); saved to docs/bench-results.txt)
 - 2026-10-17 22:41 claude: claimed C2c on main
 - 2026-10-17 22:42 claude: C2c -> done (tests: 157 passed, 1 skipped (excl. test_collab); root cause: FalkorDB 6.x runs a 2nd UNWIND..MERGE after an aggregating WITH only once, so SEED made 1/5 Sources; fix: agents MERGEd via FOREACH; bench on 6.0.2 without shim: 0 errors; next: C3)
+- 2026-10-17 22:57 claude: claimed C9 on main
