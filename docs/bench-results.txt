@@ -1,0 +1,61 @@
+MemLedger benchmark (board task C6) - scripts/bench.py against real FalkorDB 6.x
+Date: 2026-10-17   Commit under test: 0633136 (TEN.md §5 tenant lock applied)
+Server: docker falkordb/falkordb:6.0.2 (graph module 60002, redis 8.10.2), default module args
+        (TIMEOUT 1000, MAX_QUEUED_QUERIES 25), no volume, port 6379 on localhost.
+Machine: Intel i5-13500HX (20 logical CPUs), 7 GB RAM visible, Windows WSL2 (Linux 6.18.40.1);
+         client (.venv Python) and server on the same machine over localhost TCP.
+Latencies include the Python client and the full rule pipeline (see TEN.md §4).
+
+== FINDING: queries.SEED is incompatible with FalkorDB 6.0.2 ==
+SEED = "UNWIND $agents ... MERGE ... WITH count(*) AS _ UNWIND $sources AS s MERGE (y:Source ...)"
+On 6.0.2 the second UNWIND+MERGE creates only the FIRST source ('alerts'); all 3 agents are created.
+Minimal repro (redis-cli):
+  GRAPH.QUERY t "UNWIND [1,2] AS a MERGE (x:A {id:a}) WITH count(*) AS _ UNWIND [1,2,3] AS s MERGE (y:S {id:s}) ON CREATE SET y.k = s"
+  -> MATCH (y:S) returns only 1 (expected 1,2,3). Without the leading MERGE+WITH, all 3 are created.
+Effect: every tenant created on 6.x has 1 of 5 sources, so log_episode raises UnknownReference for
+'runbook', 'app-logs', 'webhook', 'fwd-logs'. Not fixed here (out of C6 scope): fix = run the
+agents part and the sources part of SEED as two queries in schema.seed.
+
+== Run A: unmodified repo code (invalid because of the seed bug, exit 1) ==
+$ python scripts/bench.py
+FalkorDB module 6.0.2 · 4 tenants · 20 readers · 2 writer(s)/tenant as threads · 10.05 s
+  writes n=  1150     114.4/s   p50 51.83 ms   p95 79.16 ms   p99 95.88 ms   max 139.63 ms
+  reads  n= 33904    3373.3/s   p50 5.26 ms   p95 12.09 ms   p99 16.99 ms   max 44.84 ms
+  errors: 3283  ["write bench0: unknown agent 'investigator' or source 'app-logs'", "write bench0: unknown agent 'investigator' or source 'app-logs'"]
+  I1 violations: none
+  cross-tenant leaks: none
+exit 1
+
+$ python scripts/bench.py --processes --same-tenant --writers 8
+FalkorDB module 6.0.2 · 4 tenants · 20 readers · 8 writer(s)/tenant as processes on ONE tenant · 11.69 s
+  writes n=  2334     199.7/s   p50 89.57 ms   p95 403.41 ms   p99 624.13 ms   max 1077.42 ms
+  reads  n= 29004    2481.8/s   p50 5.32 ms   p95 15.43 ms   p99 24.92 ms   max 485.22 ms
+  errors: 6973  ["write bench0: unknown agent 'investigator' or source 'app-logs'", "write bench0: unknown agent 'investigator' or source 'runbook'"]
+  I1 violations: none
+  cross-tenant leaks: none
+exit 1
+
+== Run B: same code, schema.seed split into two queries via an out-of-repo shim (valid numbers) ==
+Shim: monkeypatches memledger.schema.seed to run SEED's agents half and sources half separately,
+then runs scripts/bench.py unchanged with the same arguments.
+$ python scripts/bench.py 
+FalkorDB module 6.0.2 · 4 tenants · 20 readers · 2 writer(s)/tenant as threads · 10.06 s
+  writes n=  1349     134.1/s   p50 58.58 ms   p95 78.45 ms   p99 88.24 ms   max 97.77 ms
+  reads  n= 36653    3644.3/s   p50 4.9 ms   p95 10.96 ms   p99 14.34 ms   max 28.02 ms
+  errors: 0  []
+  I1 violations: none
+  cross-tenant leaks: none
+exit 0
+
+$ python scripts/bench.py --processes --same-tenant --writers 8
+FalkorDB module 6.0.2 · 4 tenants · 20 readers · 8 writer(s)/tenant as processes on ONE tenant · 10.92 s
+  writes n=  2709     248.0/s   p50 81.23 ms   p95 357.23 ms   p99 527.28 ms   max 1052.44 ms
+  reads  n= 32548    2979.8/s   p50 5.08 ms   p95 14.51 ms   p99 21.43 ms   max 105.13 ms
+  errors: 0  []
+  I1 violations: none
+  cross-tenant leaks: none
+exit 0
+
+Summary (Run B): threads, 4 tenants: 134 writes/s (p50/p95/p99 59/78/88 ms), 3,644 reads/s
+(4.9/11/14 ms), 0 errors. 8 writer processes on one tenant with the §5 lock: 248 writes/s
+(81/357/527 ms), 2,980 reads/s (5.1/15/21 ms), 0 errors. I1 ok, no cross-tenant leaks in both.

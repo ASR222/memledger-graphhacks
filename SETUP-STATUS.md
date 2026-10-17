@@ -27,7 +27,7 @@ Statuses: `todo` · `in-progress` · `review` · `done` · `blocked`. Owner is a
 | C3 | Live run with Gemini: try_extract, demo live, fix aliases/expectations, commit the extraction cache | C2a | todo | - | - | data/.extract_cache.json; memledger/config.py; data/acme/scenario.json; data/globex/scenario.json | - |
 | C4 | Cross-agent revoke cascade in the scenario (SCN.md §9) | C3 | todo | - | - | data/acme/scenario.json; memledger/scenario.py; data/acme/eval_questions.json; tests/test_scenario.py; tests/test_eval.py | - |
 | C5 | Deploy to Cloud Run (DEP.md) and pass smoke.py --full | C3; D-VENDOR | todo | - | - | resource:cloud-run | - |
-| C6 | Benchmark against real FalkorDB 6.x; save the output | D-TEN | todo | - | - | resource:bench-db | - |
+| C6 | Benchmark against real FalkorDB 6.x; save the output | D-TEN | done | claude | main | resource:bench-db; docs/bench-results.txt | 2026-10-17 22:40 |
 | C7 | Write README intro, numbers, AI_DISCLOSURE in your own words | C1; C3; C5; C6 | todo | - | - | README.md; AI_DISCLOSURE.md | - |
 | C8 | Rehearse explaining the model and queries (SUB.md §3) | D-SUB | todo | - | - | - | - |
 | V1 | Record the 3-minute video (SUB.md §6) | C5; C7 | todo | - | - | resource:cloud-run | - |
@@ -70,3 +70,5 @@ Append one line per change, newest last: `YYYY-MM-DD HH:MM owner: what changed`.
 - 2026-10-17 22:36 claude: C2a -> done (tests: 156 passed, 1 skipped (collab deselected), 0 xfailed; SEED ON CREATE, REVOKE revoked_from, AS_OF from promotion; test_patch.py added; SCN xfail removed; README regenerated (added to locks); next: C3)
 - 2026-10-17 22:36 claude: claimed C2b on main
 - 2026-10-17 22:37 claude: C2b -> done (tests: 156 passed, 1 skipped (excl. test_collab); applied TEN.md §5 cross-process FalkorDB lock (_tenant_lock) in memory.py; next: see board)
+- 2026-10-17 22:38 claude: claimed C6 on main
+- 2026-10-17 22:40 claude: C6 -> done (FalkorDB 6.0.2 Docker: threads 134 w/s p99 88ms, 3644 r/s p99 14ms; 8 procs/1 tenant 248 w/s p99 527ms; 0 errors, I1 ok, no leaks - only with seed shim: queries.SEED creates 1 of 5 Sources on 6.x (needs fix task); saved to docs/bench-results.txt)
