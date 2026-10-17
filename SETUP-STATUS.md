@@ -17,7 +17,7 @@ Statuses: `todo` · `in-progress` · `review` · `done` · `blocked`. Owner is a
 | D-API | Apply API.md: API + console (expect 125, 1 xfailed once D-VENDOR is done) | D-SCN | done | claude | main | memledger/api.py; memledger/static/index.html; memledger/static/style.css; memledger/static/app.js; tests/test_api.py | 2026-10-17 22:26 |
 | D-VENDOR | Download force-graph 1.47.4 into memledger/static/vendor/ (API.md §9) | D-API | done | claude | main | memledger/static/vendor/ | 2026-10-17 22:27 |
 | D-MCP | Apply MCP.md: MCP server (expect 130, 1 skipped, 1 xfailed) | D-API | done | claude | main | memledger/mcp_server.py; tests/test_mcp.py | 2026-10-17 22:29 |
-| D-TEN | Apply TEN.md: tenancy, bench, query block (expect 136) | D-MCP | todo | - | - | memledger/queries.py; memledger/tenancy.py; scripts/bench.py; tests/test_tenants.py | - |
+| D-TEN | Apply TEN.md: tenancy, bench, query block (expect 136) | D-MCP | done | claude | main | memledger/queries.py; memledger/tenancy.py; scripts/bench.py; tests/test_tenants.py | 2026-10-17 22:29 |
 | D-EVL | Apply EVL.md: evaluation (expect 143, 1 skipped, 2 xfailed) | D-TEN | todo | - | - | data/acme/eval_questions.json; memledger/evaluate.py; scripts/eval.py; tests/test_eval.py | - |
 | D-DEP | Apply DEP.md: container, deploy, smoke (expect 149) | D-EVL | todo | - | - | Dockerfile; .dockerignore; .gcloudignore; requirements.txt; memledger/serve.py; scripts/deploy.sh; scripts/smoke.py; tests/test_deploy.py | - |
 | D-SUB | Apply SUB.md: README, disclosure, generator (expect 150, 1 skipped, 3 xfailed) | D-DEP | todo | - | - | README.md; AI_DISCLOSURE.md; scripts/readme_queries.py; tests/test_readme.py | - |
@@ -56,3 +56,5 @@ Append one line per change, newest last: `YYYY-MM-DD HH:MM owner: what changed`.
 - 2026-10-17 22:27 claude: D-VENDOR -> done (tests: 125 passed 1 xfailed excl collab (full: 131 passed 3 failed test_collab board 1 xfailed); added memledger/static/vendor/force-graph.min.js v1.47.4 (164859 B, sha256 829a1d9e..., jsdelivr==unpkg); README credit not added (outside Locks); next: see board)
 - 2026-10-17 22:27 claude: claimed D-MCP on main
 - 2026-10-17 22:29 claude: D-MCP -> done (tests: 130 passed, 1 skipped, 1 xfailed (collab deselected; full run 136 passed, 3 collab board failures); added memledger/mcp_server.py + tests/test_mcp.py; next: D-TEN)
+- 2026-10-17 22:29 claude: claimed D-TEN on main
+- 2026-10-17 22:29 claude: D-TEN -> done (tests: 136 passed, 1 skipped, 1 xfailed (collab deselected; full run 142 passed, 3 collab board failures); added memledger/tenancy.py, scripts/bench.py, tests/test_tenants.py + tenancy query block; next: D-EVL)

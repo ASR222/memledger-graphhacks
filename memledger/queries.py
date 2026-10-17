@@ -324,3 +324,25 @@ MATCH (h:Handoff) WHERE h.id IN $ids
 SET h.delivered = true, h.delivered_at = $now
 RETURN count(h) AS delivered
 """
+
+# ---------------------------------------------------------------- tenancy (TEN.md)
+
+# Node counts by label.
+LABEL_COUNTS = """
+MATCH (n) RETURN labels(n)[0] AS label, count(n) AS n ORDER BY label
+"""
+
+# Fact counts by status.
+FACT_STATUS_COUNTS = """
+MATCH (f:Fact) RETURN f.status AS status, count(f) AS n ORDER BY status
+"""
+
+# Single-valued (subject, predicate) pairs with more than one active fact.
+# Must always be empty (Mem.md invariant I1); used to check it under load.
+I1_VIOLATIONS = """
+MATCH (f:Fact {status:'active'})
+WHERE f.predicate IN $single_preds
+WITH f.subject AS subject, f.predicate AS predicate, collect(f.object) AS objects
+WHERE size(objects) > 1
+RETURN subject, predicate, objects
+"""
