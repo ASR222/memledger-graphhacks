@@ -285,3 +285,42 @@ RETURN f.id AS id, f.subject AS subject, f.predicate AS predicate, f.object AS o
        f.valid_from AS since, collect(DISTINCT s.id) AS sources, a.id AS writer
 ORDER BY f.valid_from DESC
 """
+
+# ---------------------------------------------------------------- agents (AGT.md)
+
+# Create a source only if it doesn't exist. Never touches an existing source,
+# so it cannot un-compromise one.
+ENSURE_SOURCE = """
+MERGE (s:Source {id:$id})
+ON CREATE SET s.kind = $kind, s.trust = $trust, s.compromised = false
+RETURN s.id AS id, s.trust AS trust, s.compromised AS compromised
+"""
+
+# Record a handoff between agents carrying fact ids (shared state, not text).
+HANDOFF = """
+MATCH (a:Agent {id:$from}), (b:Agent {id:$to})
+CREATE (h:Handoff {id:$id, session:$session, at:$now, note:$note, delivered:false})
+CREATE (a)-[:SENT]->(h)
+CREATE (h)-[:TO]->(b)
+WITH h
+OPTIONAL MATCH (f:Fact) WHERE f.id IN $facts
+FOREACH (x IN CASE WHEN f IS NULL THEN [] ELSE [f] END | CREATE (h)-[:CARRIES]->(x))
+RETURN h.id AS id, count(f) AS facts
+"""
+
+# Handoffs waiting for an agent, oldest first, with the current status of each
+# carried fact (a fact may have been revoked since it was handed over).
+PENDING_HANDOFFS = """
+MATCH (a:Agent)-[:SENT]->(h:Handoff {delivered:false})-[:TO]->(:Agent {id:$to})
+OPTIONAL MATCH (h)-[:CARRIES]->(f:Fact)
+RETURN h.id AS id, a.id AS sender, h.note AS note, h.at AS at, h.session AS session,
+       collect({id:f.id, predicate:f.predicate, object:f.object, status:f.status}) AS facts
+ORDER BY h.at
+"""
+
+# Mark handoffs as read.
+DELIVER_HANDOFFS = """
+MATCH (h:Handoff) WHERE h.id IN $ids
+SET h.delivered = true, h.delivered_at = $now
+RETURN count(h) AS delivered
+"""
