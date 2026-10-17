@@ -14,7 +14,7 @@ from dataclasses import asdict, dataclass
 
 from pydantic import BaseModel, ValidationError
 
-from . import config
+from . import config, llm_retry
 from .memory import canon
 
 PROMPT_VERSION = "ext-v1"
@@ -203,8 +203,11 @@ def validate(raw: object, text: str) -> tuple[list[Candidate], list[dict]]:
 class GeminiLLM:
     """Calls Gemini with a JSON response schema. Returns the raw JSON text."""
 
-    def __init__(self, model: str | None = None, api_key: str | None = None, client=None):
+    def __init__(self, model: str | None = None, api_key: str | None = None, client=None,
+                 fallback_model: str | None = None, sleep=time.sleep):
         self.model = model or config.GEMINI_MODEL
+        self.fallback_model = fallback_model
+        self.sleep = sleep
         if client is None:
             from google import genai
             client = genai.Client(api_key=api_key or config.GEMINI_API_KEY)
@@ -212,8 +215,8 @@ class GeminiLLM:
 
     def __call__(self, system: str, user: str) -> str:
         from google.genai import types
-        resp = self.client.models.generate_content(
-            model=self.model,
+        resp = llm_retry.generate(
+            self.client, self.model, fallback=self.fallback_model, sleep=self.sleep,
             contents=user,
             config=types.GenerateContentConfig(
                 system_instruction=system,
@@ -285,9 +288,11 @@ class Extractor:
                 return parsed
             except Exception as e:  # API error or invalid JSON
                 last = e
+                if llm_retry.is_transient(e):
+                    break  # the client already retried rate limits (and any fallback)
                 if i < self.attempts - 1:
                     self.sleep(2 ** i)
-        raise ExtractionUnavailable(f"extraction failed after {self.attempts} attempts: {last}")
+        raise ExtractionUnavailable(f"extraction failed after retries: {last}")
 
     def extract(self, text: str, subject: str,
                 known: dict | None = None) -> tuple[list[Candidate], list[dict]]:

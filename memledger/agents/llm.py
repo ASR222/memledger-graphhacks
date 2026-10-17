@@ -5,9 +5,10 @@
     reply = session.send_tool_results(results)   # after reply.calls
     reply.text / reply.calls -> [{"name", "args"}]
 """
+import time
 from dataclasses import dataclass, field
 
-from .. import config
+from .. import config, llm_retry
 
 
 @dataclass
@@ -21,8 +22,11 @@ class GeminiChat:
     runs the tools. The model's own response content is appended verbatim to
     the history, which keeps any thought signatures newer models require."""
 
-    def __init__(self, model: str | None = None, api_key: str | None = None, client=None):
+    def __init__(self, model: str | None = None, api_key: str | None = None, client=None,
+                 fallback_model: str | None = None, sleep=time.sleep):
         self.model = model or config.GEMINI_MODEL
+        self.fallback_model = fallback_model
+        self.sleep = sleep
         if client is None:
             from google import genai
             client = genai.Client(api_key=api_key or config.GEMINI_API_KEY)
@@ -48,8 +52,9 @@ class _GeminiSession:
         )
 
     def _generate(self) -> Reply:
-        resp = self.chat.client.models.generate_content(
-            model=self.chat.model, contents=self.contents, config=self.config)
+        resp = llm_retry.generate(
+            self.chat.client, self.chat.model, fallback=self.chat.fallback_model,
+            sleep=self.chat.sleep, contents=self.contents, config=self.config)
         content = resp.candidates[0].content
         self.contents.append(content)
         calls = [{"name": c.name, "args": dict(c.args or {})} for c in (resp.function_calls or [])]

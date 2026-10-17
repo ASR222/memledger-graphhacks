@@ -40,6 +40,10 @@ VALUE_SYNONYMS = {
 # Extraction (Gemini). EXTRACT_MODE: live | cache_only
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY") or None
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+# Rate limits (429/503): calls per model before giving up, and an optional
+# model tried with the same policy once the main one is still rate-limited.
+GEMINI_MAX_RETRIES = int(os.getenv("GEMINI_MAX_RETRIES", "5"))
+GEMINI_FALLBACK_MODEL = os.getenv("GEMINI_FALLBACK_MODEL") or None
 EXTRACT_MODE = os.getenv("EXTRACT_MODE", "live")
 EXTRACT_CACHE = os.getenv("EXTRACT_CACHE", "data/.extract_cache.json")
 
