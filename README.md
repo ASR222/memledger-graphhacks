@@ -186,7 +186,7 @@ The miss (Q16) is a time-travel bug the evaluation found; TODO(you): update afte
 ## Cypher queries
 
 <!-- QUERIES:START -->
-All 35 queries the product runs, generated from `memledger/queries.py`.
+All 36 queries the product runs, generated from `memledger/queries.py`.
 
 #### `INDEXES`
 
@@ -564,6 +564,14 @@ WITH h
 OPTIONAL MATCH (f:Fact) WHERE f.id IN $facts
 FOREACH (x IN CASE WHEN f IS NULL THEN [] ELSE [f] END | CREATE (h)-[:CARRIES]->(x))
 RETURN h.id AS id, count(f) AS facts
+```
+
+#### `SOURCE_KIND`
+
+The kind of a source, used by Team.route to pick the agent that handles it.
+
+```cypher
+MATCH (s:Source {id:$id}) RETURN s.kind AS kind
 ```
 
 #### `PENDING_HANDOFFS`

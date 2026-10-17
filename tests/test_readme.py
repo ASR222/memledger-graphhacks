@@ -19,7 +19,6 @@ def test_readme_lists_every_query():
     assert block.strip() == rq.markdown().strip(), "README queries are stale; rerun the generator"
 
 
-@pytest.mark.xfail(strict=True, reason="SUB.md task C1: move the inline query in agents/team.py to queries.py")
 def test_no_cypher_outside_queries_py():
     found = []
     for path in (ROOT / "memledger").rglob("*.py"):

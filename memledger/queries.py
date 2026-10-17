@@ -308,6 +308,11 @@ FOREACH (x IN CASE WHEN f IS NULL THEN [] ELSE [f] END | CREATE (h)-[:CARRIES]->
 RETURN h.id AS id, count(f) AS facts
 """
 
+# The kind of a source, used by Team.route to pick the agent that handles it.
+SOURCE_KIND = """
+MATCH (s:Source {id:$id}) RETURN s.kind AS kind
+"""
+
 # Handoffs waiting for an agent, oldest first, with the current status of each
 # carried fact (a fact may have been revoked since it was handed over).
 PENDING_HANDOFFS = """

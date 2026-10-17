@@ -35,8 +35,7 @@ class Team:
     # ------------------------------------------------------------ observe
 
     def route(self, source: str) -> str:
-        rows = _rows(graph(self.tenant).ro_query(
-            "MATCH (s:Source {id:$id}) RETURN s.kind AS kind", {"id": source}))
+        rows = _rows(graph(self.tenant).ro_query(Q.SOURCE_KIND, {"id": source}))
         if not rows:
             raise memory.UnknownReference(f"unknown source {source!r}")
         agent = ROUTES.get(rows[0]["kind"])
