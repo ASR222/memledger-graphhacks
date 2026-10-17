@@ -14,7 +14,7 @@ Statuses: `todo` · `in-progress` · `review` · `done` · `blocked`. Owner is a
 | D-TRU | Apply TRU.md: trust, CLI, query block (expect 83) | D-EXT | done | claude | main | memledger/queries.py; memledger/trust.py; scripts/trust.py; scripts/__init__.py; tests/test_trust.py | 2026-10-17 22:19 |
 | D-AGT | Apply AGT.md: agents, query block (expect 99) | D-TRU | done | claude | main | memledger/queries.py; memledger/agents/; scripts/run_team.py; tests/test_agents.py | 2026-10-17 22:20 |
 | D-SCN | Apply SCN.md: scenario data, runner, demo CLI (expect 113, 1 xfailed) | D-AGT | done | claude | main | data/; memledger/scenario.py; scripts/demo.py; tests/test_scenario.py | 2026-10-17 22:23 |
-| D-API | Apply API.md: API + console (expect 125, 1 xfailed once D-VENDOR is done) | D-SCN | todo | - | - | memledger/api.py; memledger/static/index.html; memledger/static/style.css; memledger/static/app.js; tests/test_api.py | - |
+| D-API | Apply API.md: API + console (expect 125, 1 xfailed once D-VENDOR is done) | D-SCN | done | claude | main | memledger/api.py; memledger/static/index.html; memledger/static/style.css; memledger/static/app.js; tests/test_api.py | 2026-10-17 22:26 |
 | D-VENDOR | Download force-graph 1.47.4 into memledger/static/vendor/ (API.md §9) | D-API | todo | - | - | memledger/static/vendor/ | - |
 | D-MCP | Apply MCP.md: MCP server (expect 130, 1 skipped, 1 xfailed) | D-API | todo | - | - | memledger/mcp_server.py; tests/test_mcp.py | - |
 | D-TEN | Apply TEN.md: tenancy, bench, query block (expect 136) | D-MCP | todo | - | - | memledger/queries.py; memledger/tenancy.py; scripts/bench.py; tests/test_tenants.py | - |
@@ -50,3 +50,5 @@ Append one line per change, newest last: `YYYY-MM-DD HH:MM owner: what changed`.
 - 2026-10-17 22:20 claude: D-AGT -> done (tests: 105 passed 3 failed (test_collab board tests); excl collab 99 passed (matches expected); applied AGT.md: memledger/agents/*, test_agents.py, AGT query block appended; run_team.py copied by hand from AGT.md s14 (apply_docs misses it); not run live (needs GEMINI_API_KEY); next: D-SCN)
 - 2026-10-17 22:23 claude: claimed D-SCN on main
 - 2026-10-17 22:23 claude: D-SCN -> done (tests: 119 passed 3 failed (test_collab board tests) 1 xfailed; excl collab 113 passed 1 xfailed (matches expected); applied SCN.md: data/acme, data/globex, memledger/scenario.py, scripts/demo.py, tests/test_scenario.py; demo not run live; next: D-API)
+- 2026-10-17 22:25 claude: claimed D-API on main
+- 2026-10-17 22:26 claude: D-API -> done (tests: 130 passed 4 failed (3 test_collab board + test_ui_is_served awaiting vendor) 1 xfailed; excl collab 124 passed 1 failed (vendor) 1 xfailed (125 after D-VENDOR); applied API.md: memledger/api.py, static/index.html, style.css, app.js, tests/test_api.py; next: D-VENDOR)

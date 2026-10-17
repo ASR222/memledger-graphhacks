@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MemLedger</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand"><span class="mark" aria-hidden="true"></span>MemLedger</div>
+  <label class="field">Tenant
+    <select id="tenant"></select>
+  </label>
+  <div class="incident" id="incident">—</div>
+  <div class="modes" id="modes"></div>
+</header>
+
+<main class="layout">
+  <section class="left" aria-label="Story and agents">
+    <div class="card demo">
+      <div class="demo-head">
+        <div>
+          <div class="eyebrow">Scripted demo</div>
+          <div class="step-count" id="stepCount">Step 0 of 0</div>
+        </div>
+        <div class="demo-buttons">
+          <button id="reset" class="ghost" type="button">Reset</button>
+          <button id="next" class="primary" type="button">Next step</button>
+        </div>
+      </div>
+      <p class="say" id="say">Reset the tenant, then step through the story.</p>
+      <ol class="dots" id="dots" aria-label="Steps"></ol>
+    </div>
+
+    <div class="feed" id="feed" aria-live="polite"></div>
+
+    <form class="card ask" id="askForm">
+      <div class="eyebrow">Ask an agent</div>
+      <div class="ask-row">
+        <select id="askAgent" aria-label="Agent">
+          <option value="comms">Comms</option>
+          <option value="investigator">Investigator</option>
+          <option value="triage">Triage</option>
+        </select>
+        <input id="askSession" aria-label="Session" value="s2" size="3">
+      </div>
+      <div class="ask-row">
+        <input id="askQ" aria-label="Question" placeholder="Why do we believe the root cause?" required>
+        <button class="primary" type="submit">Ask</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="right" aria-label="Memory graph">
+    <div id="graph"></div>
+
+    <div class="legend" id="legend">
+      <span><i class="dot active"></i>active</span>
+      <span><i class="dot quarantined"></i>quarantined</span>
+      <span><i class="dot closed"></i>closed</span>
+      <span><i class="dot revoked"></i>revoked</span>
+      <span><i class="sq agent"></i>agent</span>
+      <span><i class="sq source"></i>source</span>
+    </div>
+
+    <div class="timebar">
+      <span class="eyebrow" id="timeLabel">Live</span>
+      <input type="range" id="time" min="0" max="1000" value="1000" aria-label="Time travel">
+      <button id="live" class="ghost small" type="button">Live</button>
+    </div>
+
+    <aside class="panel" id="sourcesPanel" aria-label="Sources and quarantine">
+      <div class="tabs">
+        <button class="tab on" data-tab="sources" type="button">Sources</button>
+        <button class="tab" data-tab="quarantine" type="button">Quarantine</button>
+      </div>
+      <div id="sources" class="tabbody"></div>
+      <div id="quarantine" class="tabbody" hidden></div>
+    </aside>
+
+    <aside class="drawer" id="why" hidden aria-label="Why panel">
+      <button class="close" id="whyClose" type="button" aria-label="Close">×</button>
+      <div id="whyBody"></div>
+    </aside>
+  </section>
+</main>
+
+<script src="/static/vendor/force-graph.min.js"></script>
+<script>
+  if (!window.ForceGraph) {
+    document.write('<script src="https://cdn.jsdelivr.net/npm/force-graph@1.47.4/dist/force-graph.min.js"><\/script>');
+  }
+</script>
+<script src="/static/app.js"></script>
+</body>
+</html>
