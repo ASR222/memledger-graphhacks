@@ -1,0 +1,20 @@
+[project]
+name = "memledger"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+  "falkordb",
+  "langgraph",
+  "langchain-google-genai",
+  "google-genai",
+  "fastapi",
+  "uvicorn[standard]",
+  "pydantic>=2",
+  "python-dotenv",
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "falkordblite"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

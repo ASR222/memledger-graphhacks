@@ -8,7 +8,7 @@ Statuses: `todo` · `in-progress` · `review` · `done` · `blocked`. Owner is a
 
 | ID | Task | Depends on | Status | Owner | Branch | Locks | Updated |
 |---|---|---|---|---|---|---|---|
-| S1 | Apply SETUP.md: repo skeleton, pyproject, compose, env example | - | todo | - | - | pyproject.toml; docker-compose.yml; .env.example; .gitignore | - |
+| S1 | Apply SETUP.md: repo skeleton, pyproject, compose, env example | - | done | claude | main | pyproject.toml; docker-compose.yml; .env.example; .gitignore | 2026-10-17 22:16 |
 | D-MEM | Apply Mem.md v2: memory core + its tests (expect 23 passed) | S1 | todo | - | - | memledger/config.py; memledger/db.py; memledger/queries.py; memledger/schema.py; memledger/memory.py; memledger/__init__.py; tests/conftest.py; tests/test_memory.py; tests/test_tenancy.py | - |
 | D-EXT | Apply EXT.md: extraction, ingest (expect 67) | D-MEM | todo | - | - | memledger/extract.py; memledger/ingest.py; scripts/try_extract.py; tests/test_extract.py; tests/test_conflicts.py; tests/test_ingest.py | - |
 | D-TRU | Apply TRU.md: trust, CLI, query block (expect 83) | D-EXT | todo | - | - | memledger/queries.py; memledger/trust.py; scripts/trust.py; scripts/__init__.py; tests/test_trust.py | - |
@@ -38,3 +38,5 @@ Statuses: `todo` · `in-progress` · `review` · `done` · `blocked`. Owner is a
 Append one line per change, newest last: `YYYY-MM-DD HH:MM owner: what changed`.
 
 - 2026-10-17 19:40 claude: board created; nothing applied to the repo yet from this board's point of view (mark tasks you already did as done, with a log line)
+- 2026-10-17 22:16 claude: claimed S1 on main
+- 2026-10-17 22:16 claude: S1 -> done (tests: bare pytest 1 collection error (no module 'scripts', pre-existing; no conftest until D-MEM); python -m pytest 7 passed 2 failed (test_collab copies live board, expects S1 todo); applied SETUP.md: pyproject, compose, .env.example, .gitignore; next: D-MEM)
