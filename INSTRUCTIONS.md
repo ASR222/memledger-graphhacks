@@ -485,7 +485,8 @@ ORDER = ["SETUP", "Mem", "EXT", "TRU", "AGT", "SCN", "API", "MCP", "TEN", "EVL",
 # SETUP.md's code sections for the memory core are v1 and superseded; take only these.
 SETUP_ONLY = {"docker-compose.yml", "pyproject.toml", ".env.example", ".gitignore"}
 APPEND = {"TRU": "### 13.1 Append", "AGT": "### 18.1 Append", "TEN": "### 10.1 Append"}
-FILE_BLOCK = re.compile(r"^### (?:[\d.]+ )?`([^`]+)`([^\n]*)\n```[\w-]*\n(.*?)\n```", re.S | re.M)
+# A heading naming a file, optional blank lines, then its fenced block.
+FILE_BLOCK = re.compile(r"^### (?:[\d.]+ )?`([^`]+)`([^\n]*)\n(?:[ \t]*\n)*```[\w-]*\n(.*?)\n```", re.S | re.M)
 
 
 def extract(doc: str, text: str) -> tuple[dict[str, str], list[str]]:
@@ -726,6 +727,8 @@ def test_apply_docs_full_then_idempotent(tmp_path):
     r = A.apply(DOCS, tmp_path, write=True)
     assert len(r["new"]) > 55 and r["changed"] == [] and len(r["appended"]) == 3
     assert not (tmp_path / "scripts" / "seed.py").exists()          # SETUP v1 code not taken
+    for f in ("docker-compose.yml", "pyproject.toml", ".env.example", ".gitignore"):
+        assert (tmp_path / f).exists(), f                             # SETUP config files taken
     mem = A.extract("Mem", (DOCS / "Mem.md").read_text())[0]["memledger/queries.py"]
     q = (tmp_path / "memledger" / "queries.py").read_text()
     assert q.startswith(mem.rstrip("\n")) and "agents (AGT.md)" in q and "tenancy (TEN.md)" in q
