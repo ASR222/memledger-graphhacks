@@ -16,7 +16,7 @@ Statuses: `todo` · `in-progress` · `review` · `done` · `blocked`. Owner is a
 | D-SCN | Apply SCN.md: scenario data, runner, demo CLI (expect 113, 1 xfailed) | D-AGT | done | claude | main | data/; memledger/scenario.py; scripts/demo.py; tests/test_scenario.py | 2026-10-17 22:23 |
 | D-API | Apply API.md: API + console (expect 125, 1 xfailed once D-VENDOR is done) | D-SCN | done | claude | main | memledger/api.py; memledger/static/index.html; memledger/static/style.css; memledger/static/app.js; tests/test_api.py | 2026-10-17 22:26 |
 | D-VENDOR | Download force-graph 1.47.4 into memledger/static/vendor/ (API.md §9) | D-API | done | claude | main | memledger/static/vendor/ | 2026-10-17 22:27 |
-| D-MCP | Apply MCP.md: MCP server (expect 130, 1 skipped, 1 xfailed) | D-API | todo | - | - | memledger/mcp_server.py; tests/test_mcp.py | - |
+| D-MCP | Apply MCP.md: MCP server (expect 130, 1 skipped, 1 xfailed) | D-API | done | claude | main | memledger/mcp_server.py; tests/test_mcp.py | 2026-10-17 22:29 |
 | D-TEN | Apply TEN.md: tenancy, bench, query block (expect 136) | D-MCP | todo | - | - | memledger/queries.py; memledger/tenancy.py; scripts/bench.py; tests/test_tenants.py | - |
 | D-EVL | Apply EVL.md: evaluation (expect 143, 1 skipped, 2 xfailed) | D-TEN | todo | - | - | data/acme/eval_questions.json; memledger/evaluate.py; scripts/eval.py; tests/test_eval.py | - |
 | D-DEP | Apply DEP.md: container, deploy, smoke (expect 149) | D-EVL | todo | - | - | Dockerfile; .dockerignore; .gcloudignore; requirements.txt; memledger/serve.py; scripts/deploy.sh; scripts/smoke.py; tests/test_deploy.py | - |
@@ -54,3 +54,5 @@ Append one line per change, newest last: `YYYY-MM-DD HH:MM owner: what changed`.
 - 2026-10-17 22:26 claude: D-API -> done (tests: 130 passed 4 failed (3 test_collab board + test_ui_is_served awaiting vendor) 1 xfailed; excl collab 124 passed 1 failed (vendor) 1 xfailed (125 after D-VENDOR); applied API.md: memledger/api.py, static/index.html, style.css, app.js, tests/test_api.py; next: D-VENDOR)
 - 2026-10-17 22:26 claude: claimed D-VENDOR on main
 - 2026-10-17 22:27 claude: D-VENDOR -> done (tests: 125 passed 1 xfailed excl collab (full: 131 passed 3 failed test_collab board 1 xfailed); added memledger/static/vendor/force-graph.min.js v1.47.4 (164859 B, sha256 829a1d9e..., jsdelivr==unpkg); README credit not added (outside Locks); next: see board)
+- 2026-10-17 22:27 claude: claimed D-MCP on main
+- 2026-10-17 22:29 claude: D-MCP -> done (tests: 130 passed, 1 skipped, 1 xfailed (collab deselected; full run 136 passed, 3 collab board failures); added memledger/mcp_server.py + tests/test_mcp.py; next: D-TEN)
