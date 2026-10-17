@@ -1,0 +1,10 @@
+# Runtime dependencies for the deployed app, pinned to the versions tested (17 Oct 2026).
+falkordb==1.8.0
+redis==8.1.0
+fastapi==0.143.3
+uvicorn[standard]==0.53.0
+google-genai==2.31.0
+pydantic==2.13.5
+python-dotenv==1.2.3
+# Only needed for MEMLEDGER_EMBEDDED_DB=1 (FalkorDB inside the container)
+falkordblite==0.10.0

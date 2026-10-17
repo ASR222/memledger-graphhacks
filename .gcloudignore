@@ -1,0 +1,14 @@
+.git
+.venv
+**/__pycache__
+**/*.pyc
+.env
+.env.*
+tests
+node_modules
+package
+*.tgz
+data/.demo_state.json
+data/*/eval_results*
+*.db
+.gcloudignore

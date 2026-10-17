@@ -19,7 +19,7 @@ Statuses: `todo` · `in-progress` · `review` · `done` · `blocked`. Owner is a
 | D-MCP | Apply MCP.md: MCP server (expect 130, 1 skipped, 1 xfailed) | D-API | done | claude | main | memledger/mcp_server.py; tests/test_mcp.py | 2026-10-17 22:29 |
 | D-TEN | Apply TEN.md: tenancy, bench, query block (expect 136) | D-MCP | done | claude | main | memledger/queries.py; memledger/tenancy.py; scripts/bench.py; tests/test_tenants.py | 2026-10-17 22:29 |
 | D-EVL | Apply EVL.md: evaluation (expect 143, 1 skipped, 2 xfailed) | D-TEN | done | claude | main | data/acme/eval_questions.json; memledger/evaluate.py; scripts/eval.py; tests/test_eval.py | 2026-10-17 22:31 |
-| D-DEP | Apply DEP.md: container, deploy, smoke (expect 149) | D-EVL | todo | - | - | Dockerfile; .dockerignore; .gcloudignore; requirements.txt; memledger/serve.py; scripts/deploy.sh; scripts/smoke.py; tests/test_deploy.py | - |
+| D-DEP | Apply DEP.md: container, deploy, smoke (expect 149) | D-EVL | done | claude | main | Dockerfile; .dockerignore; .gcloudignore; requirements.txt; memledger/serve.py; scripts/deploy.sh; scripts/smoke.py; tests/test_deploy.py | 2026-10-17 22:32 |
 | D-SUB | Apply SUB.md: README, disclosure, generator (expect 150, 1 skipped, 3 xfailed) | D-DEP | todo | - | - | README.md; AI_DISCLOSURE.md; scripts/readme_queries.py; tests/test_readme.py | - |
 | C1 | Move the inline Cypher in agents/team.py into queries.py; regenerate README; remove the xfail (SUB.md §2) | D-SUB | todo | - | - | memledger/agents/team.py; memledger/queries.py; README.md; tests/test_readme.py | - |
 | C2a | Apply the seed + as_of patch (SCN.md §12) and tests/test_patch.py; remove the SCN xfail | D-SUB | todo | - | - | memledger/queries.py; tests/test_patch.py; tests/test_scenario.py | - |
@@ -60,3 +60,5 @@ Append one line per change, newest last: `YYYY-MM-DD HH:MM owner: what changed`.
 - 2026-10-17 22:29 claude: D-TEN -> done (tests: 136 passed, 1 skipped, 1 xfailed (collab deselected; full run 142 passed, 3 collab board failures); added memledger/tenancy.py, scripts/bench.py, tests/test_tenants.py + tenancy query block; next: D-EVL)
 - 2026-10-17 22:30 claude: claimed D-EVL on main
 - 2026-10-17 22:31 claude: D-EVL -> done (tests: 143 passed, 1 skipped, 2 xfailed (collab deselected; full run 149 passed, 3 collab board failures); added data/acme/eval_questions.json, memledger/evaluate.py, scripts/eval.py, tests/test_eval.py; next: D-DEP)
+- 2026-10-17 22:31 claude: claimed D-DEP on main
+- 2026-10-17 22:32 claude: D-DEP -> done (tests: 149 passed, 1 skipped, 2 xfailed (collab deselected; full run 155 passed, 3 collab board failures); added Dockerfile, .dockerignore, .gcloudignore, requirements.txt, memledger/serve.py, scripts/deploy.sh, scripts/smoke.py, tests/test_deploy.py; next: D-SUB)
