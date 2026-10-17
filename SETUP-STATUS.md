@@ -25,7 +25,7 @@ Statuses: `todo` · `in-progress` · `review` · `done` · `blocked`. Owner is a
 | C2a | Apply the seed + as_of patch (SCN.md §12) and tests/test_patch.py; remove the SCN xfail | D-SUB | done | claude | main | memledger/queries.py; tests/test_patch.py; tests/test_scenario.py; README.md | 2026-10-17 22:36 |
 | C2b | Apply the cross-process lock patch (TEN.md §5) | D-SUB | done | claude | main | memledger/memory.py | 2026-10-17 22:37 |
 | C2c | Fix queries.SEED so all Sources are created on real FalkorDB 6.x (found in C6) | C2a | done | claude | main | memledger/queries.py; memledger/schema.py; tests/test_patch.py; README.md; docs/bench-results.txt | 2026-10-17 22:42 |
-| C3 | Live run with Gemini: try_extract, demo live, fix aliases/expectations, commit the extraction cache | C2a | todo | - | - | data/.extract_cache.json; memledger/config.py; data/acme/scenario.json; data/globex/scenario.json | - |
+| C3 | Live run with Gemini: try_extract, demo live, fix aliases/expectations, commit the extraction cache | C2a | in-progress | claude | main | data/.extract_cache.json; memledger/config.py; data/acme/scenario.json; data/globex/scenario.json | 2026-10-17 23:01 |
 | C4 | Cross-agent revoke cascade in the scenario (SCN.md §9) | C3 | todo | - | - | data/acme/scenario.json; memledger/scenario.py; data/acme/eval_questions.json; tests/test_scenario.py; tests/test_eval.py | - |
 | C5 | Deploy to Cloud Run (DEP.md) and pass smoke.py --full | C3; D-VENDOR | todo | - | - | resource:cloud-run | - |
 | C6 | Benchmark against real FalkorDB 6.x; save the output | D-TEN | done | claude | main | resource:bench-db; docs/bench-results.txt | 2026-10-17 22:40 |
@@ -78,3 +78,4 @@ Append one line per change, newest last: `YYYY-MM-DD HH:MM owner: what changed`.
 - 2026-10-17 22:42 claude: C2c -> done (tests: 157 passed, 1 skipped (excl. test_collab); root cause: FalkorDB 6.x runs a 2nd UNWIND..MERGE after an aggregating WITH only once, so SEED made 1/5 Sources; fix: agents MERGEd via FOREACH; bench on 6.0.2 without shim: 0 errors; next: C3)
 - 2026-10-17 22:57 claude: claimed C9 on main
 - 2026-10-17 22:59 claude: C9 -> done (tests: 166 passed, 1 skipped (test_collab deselected); added memledger/llm_retry.py (retry 429/503 honoring retryDelay, backoff 2..60s, fallback model) used by GeminiLLM and GeminiChat; env GEMINI_MAX_RETRIES=5, GEMINI_FALLBACK_MODEL; next: C3)
+- 2026-10-17 23:01 claude: claimed C3 on main
