@@ -15,9 +15,11 @@ INDEXES = [
 ]
 
 # Seed the tenant's agents and sources. Idempotent.
+# Agents go through FOREACH: on FalkorDB 6.x a second UNWIND...MERGE after an
+# aggregating WITH runs only once (1 of N Sources created).
 SEED = """
-UNWIND $agents AS a MERGE (x:Agent {id:a.id}) SET x.role = a.role
-WITH count(*) AS _
+FOREACH (a IN $agents | MERGE (x:Agent {id:a.id}) SET x.role = a.role)
+WITH 1 AS _
 UNWIND $sources AS s MERGE (y:Source {id:s.id})
 ON CREATE SET y.kind = s.kind, y.trust = s.trust, y.compromised = false
 """

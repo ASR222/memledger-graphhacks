@@ -59,3 +59,8 @@ exit 0
 Summary (Run B): threads, 4 tenants: 134 writes/s (p50/p95/p99 59/78/88 ms), 3,644 reads/s
 (4.9/11/14 ms), 0 errors. 8 writer processes on one tenant with the §5 lock: 248 writes/s
 (81/357/527 ms), 2,980 reads/s (5.1/15/21 ms), 0 errors. I1 ok, no cross-tenant leaks in both.
+
+C2c (2026-10-17): queries.SEED fixed in-repo (agents via FOREACH; FalkorDB 6.x ran a second
+UNWIND...MERGE after an aggregating WITH only once). Re-run on falkordb/falkordb:6.0.2 with NO
+shim: `python scripts/bench.py --seconds 5` -> 129.5 writes/s, 3558 reads/s, errors: 0, I1 ok,
+no cross-tenant leaks. The out-of-repo seed shim is no longer needed.

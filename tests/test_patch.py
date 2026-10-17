@@ -30,3 +30,10 @@ def test_revoked_while_quarantined_never_in_history():
     m.revoke("acme", "fwd-logs", 200)
     m.revoke("acme", "webhook", 200)
     assert [f["id"] for f in m.as_of("acme", 150)] == ["f2"]
+
+
+def test_seed_creates_all_sources():
+    # C2c: on FalkorDB 6.x the old SEED created only 1 of 5 Sources.
+    schema.seed("acme")
+    missing = [s["id"] for s in schema.SOURCES if m.source_info("acme", s["id"]) is None]
+    assert missing == []
