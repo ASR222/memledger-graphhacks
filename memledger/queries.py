@@ -239,3 +239,49 @@ EDGES = """
 MATCH (a)-[r]->(b)
 RETURN ID(a) AS src, type(r) AS type, ID(b) AS dst
 """
+
+# ---------------------------------------------------------------- trust (TRU.md)
+
+# Every source with its trust and how many facts cite it directly, by status.
+TRUST_TABLE = """
+MATCH (s:Source)
+OPTIONAL MATCH (s)<-[:FROM_SOURCE]-(f:Fact)
+RETURN s.id AS id, s.kind AS kind, s.trust AS trust, s.compromised AS compromised,
+       sum(CASE WHEN f.status = 'active' THEN 1 ELSE 0 END) AS active,
+       sum(CASE WHEN f.status = 'quarantined' THEN 1 ELSE 0 END) AS quarantined,
+       sum(CASE WHEN f.status = 'revoked' THEN 1 ELSE 0 END) AS revoked
+ORDER BY s.trust DESC, s.id
+"""
+
+# Dry run of REVOKE: the same traversal, read-only. `direct` is true when the
+# source itself asserted the fact; false when the fact was concluded from one
+# that did. `hops` is the shortest provenance distance.
+BLAST_RADIUS = """
+MATCH p = (s:Source {id:$source})<-[:FROM_SOURCE|DERIVED_FROM*1..6]-(f:Fact)
+WHERE f.status IN ['active','quarantined']
+WITH s, f, min(length(p)) AS hops
+OPTIONAL MATCH (f)-[d:FROM_SOURCE]->(s)
+WITH f, hops, count(d) > 0 AS direct
+OPTIONAL MATCH (a:Agent)-[w:WROTE]->(f)
+WHERE w.corroborates IS NULL
+RETURN f.id AS id, f.subject AS subject, f.predicate AS predicate,
+       f.object AS object, f.status AS status, a.id AS writer, hops, direct
+ORDER BY hops, f.valid_from
+"""
+
+# Change a source's trust. Affects future writes only.
+SET_TRUST = """
+MATCH (s:Source {id:$id})
+SET s.trust = $trust
+RETURN s.id AS id, s.trust AS trust
+"""
+
+# Quarantined facts, newest first, with the source that put them there.
+QUARANTINE = """
+MATCH (f:Fact {status:'quarantined'})-[:FROM_SOURCE]->(s:Source)
+OPTIONAL MATCH (a:Agent)-[w:WROTE]->(f)
+WHERE w.corroborates IS NULL
+RETURN f.id AS id, f.subject AS subject, f.predicate AS predicate, f.object AS object,
+       f.valid_from AS since, collect(DISTINCT s.id) AS sources, a.id AS writer
+ORDER BY f.valid_from DESC
+"""
