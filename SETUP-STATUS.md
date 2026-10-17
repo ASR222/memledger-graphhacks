@@ -23,7 +23,7 @@ Statuses: `todo` · `in-progress` · `review` · `done` · `blocked`. Owner is a
 | D-SUB | Apply SUB.md: README, disclosure, generator (expect 150, 1 skipped, 3 xfailed) | D-DEP | done | claude | main | README.md; AI_DISCLOSURE.md; scripts/readme_queries.py; tests/test_readme.py | 2026-10-17 22:33 |
 | C1 | Move the inline Cypher in agents/team.py into queries.py; regenerate README; remove the xfail (SUB.md §2) | D-SUB | done | claude | main | memledger/agents/team.py; memledger/queries.py; README.md; tests/test_readme.py | 2026-10-17 22:34 |
 | C2a | Apply the seed + as_of patch (SCN.md §12) and tests/test_patch.py; remove the SCN xfail | D-SUB | done | claude | main | memledger/queries.py; tests/test_patch.py; tests/test_scenario.py; README.md | 2026-10-17 22:36 |
-| C2b | Apply the cross-process lock patch (TEN.md §5) | D-SUB | todo | - | - | memledger/memory.py | - |
+| C2b | Apply the cross-process lock patch (TEN.md §5) | D-SUB | done | claude | main | memledger/memory.py | 2026-10-17 22:37 |
 | C3 | Live run with Gemini: try_extract, demo live, fix aliases/expectations, commit the extraction cache | C2a | todo | - | - | data/.extract_cache.json; memledger/config.py; data/acme/scenario.json; data/globex/scenario.json | - |
 | C4 | Cross-agent revoke cascade in the scenario (SCN.md §9) | C3 | todo | - | - | data/acme/scenario.json; memledger/scenario.py; data/acme/eval_questions.json; tests/test_scenario.py; tests/test_eval.py | - |
 | C5 | Deploy to Cloud Run (DEP.md) and pass smoke.py --full | C3; D-VENDOR | todo | - | - | resource:cloud-run | - |
@@ -68,3 +68,5 @@ Append one line per change, newest last: `YYYY-MM-DD HH:MM owner: what changed`.
 - 2026-10-17 22:34 claude: C1 -> done (tests: 151 passed, 1 skipped, 2 xfailed (collab deselected; full run 155 passed, 5 collab board failures, fresh-board assumptions); moved Team.route inline Cypher to queries.SOURCE_KIND, regenerated README queries (36), removed C1 xfail in tests/test_readme.py; next: C2)
 - 2026-10-17 22:35 claude: claimed C2a on main
 - 2026-10-17 22:36 claude: C2a -> done (tests: 156 passed, 1 skipped (collab deselected), 0 xfailed; SEED ON CREATE, REVOKE revoked_from, AS_OF from promotion; test_patch.py added; SCN xfail removed; README regenerated (added to locks); next: C3)
+- 2026-10-17 22:36 claude: claimed C2b on main
+- 2026-10-17 22:37 claude: C2b -> done (tests: 156 passed, 1 skipped (excl. test_collab); applied TEN.md §5 cross-process FalkorDB lock (_tenant_lock) in memory.py; next: see board)

@@ -7,15 +7,34 @@ import re
 import threading
 import uuid
 from collections import defaultdict
+from contextlib import contextmanager
 
 from . import config
 from . import queries as Q
-from .db import graph
+from .db import get_db, graph
 
 # FalkorDB serializes writes per graph, but write_fact is several queries
 # (check, then write). This lock makes that sequence atomic per tenant within
 # one process. Run a single API process.
 _locks: dict[str, threading.Lock] = defaultdict(threading.Lock)
+
+
+LOCK_TTL_S = 30
+
+
+@contextmanager
+def _tenant_lock(tenant: str):
+    """Serialize check-then-write sequences for one tenant across threads AND
+    processes: a thread lock, plus a lock key on the FalkorDB server itself
+    (it speaks the Redis protocol). Expires after LOCK_TTL_S if a holder dies."""
+    conn = getattr(get_db(), "connection", None)
+    with _locks[tenant]:
+        if conn is None or not hasattr(conn, "lock"):
+            yield
+            return
+        with conn.lock(f"memledger:lock:{tenant}", timeout=LOCK_TTL_S, sleep=0.002,
+                       blocking_timeout=LOCK_TTL_S):
+            yield
 
 
 class MemoryError_(Exception):
@@ -91,7 +110,7 @@ def write_fact(tenant, *, agent, source, episode, subject, predicate, object,
     parents = list(parents)
     g = graph(tenant)
 
-    with _locks[tenant]:
+    with _tenant_lock(tenant):
         src = _rows(g.ro_query(Q.SOURCE_INFO, {"id": source}))
         if not src:
             raise UnknownReference(f"unknown source {source!r}")
@@ -153,7 +172,7 @@ def retract(tenant, *, agent, source, episode, subject, predicate, object, now) 
     if predicate not in config.PREDICATES:
         raise ValueError(f"predicate {predicate!r} not in vocabulary")
     g = graph(tenant)
-    with _locks[tenant]:
+    with _tenant_lock(tenant):
         src = _rows(g.ro_query(Q.SOURCE_INFO, {"id": source}))
         if not src:
             raise UnknownReference(f"unknown source {source!r}")
@@ -168,7 +187,7 @@ def retract(tenant, *, agent, source, episode, subject, predicate, object, now) 
 
 
 def promote(tenant, fact_id, now) -> dict:
-    with _locks[tenant]:
+    with _tenant_lock(tenant):
         rows = _rows(graph(tenant).query(Q.PROMOTE, {
             "id": fact_id, "now": now, "single_preds": sorted(config.SINGLE_VALUED)}))
     if not rows:
@@ -178,7 +197,7 @@ def promote(tenant, fact_id, now) -> dict:
 
 def revoke(tenant, source, now) -> list[dict]:
     """Mark a source compromised and revoke everything that depends on it."""
-    with _locks[tenant]:
+    with _tenant_lock(tenant):
         g = graph(tenant)
         if not _rows(g.ro_query(Q.SOURCE_INFO, {"id": source})):
             raise UnknownReference(f"unknown source {source!r}")
