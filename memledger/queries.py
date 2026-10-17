@@ -19,7 +19,7 @@ SEED = """
 UNWIND $agents AS a MERGE (x:Agent {id:a.id}) SET x.role = a.role
 WITH count(*) AS _
 UNWIND $sources AS s MERGE (y:Source {id:s.id})
-SET y.kind = s.kind, y.trust = s.trust, y.compromised = false
+ON CREATE SET y.kind = s.kind, y.trust = s.trust, y.compromised = false
 """
 
 # ---------------------------------------------------------------- writes
@@ -112,7 +112,7 @@ WITH s
 MATCH (s)<-[:FROM_SOURCE|DERIVED_FROM*1..6]-(f:Fact)
 WHERE f.status IN ['active','quarantined']
 WITH DISTINCT f
-SET f.status = 'revoked', f.valid_to = $now
+SET f.revoked_from = f.status, f.status = 'revoked', f.valid_to = $now
 WITH f
 OPTIONAL MATCH (a:Agent)-[w:WROTE]->(f)
 WHERE w.corroborates IS NULL
@@ -180,8 +180,10 @@ ORDER BY f.subject, f.predicate
 # were valid then. Quarantined facts never appear.
 AS_OF = """
 MATCH (f:Fact)
-WHERE f.valid_from <= $t AND (f.valid_to IS NULL OR f.valid_to > $t)
+WHERE coalesce(f.promoted_at, f.valid_from) <= $t
+  AND (f.valid_to IS NULL OR f.valid_to > $t)
   AND f.status <> 'quarantined'
+  AND coalesce(f.revoked_from, 'active') <> 'quarantined'
 RETURN f.id AS id, f.subject AS subject, f.predicate AS predicate, f.object AS object
 ORDER BY f.subject, f.predicate
 """

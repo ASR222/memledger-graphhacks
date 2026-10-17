@@ -162,7 +162,6 @@ def test_cache_mode_without_cache_reports_failures(tmp_path, monkeypatch):
     assert rc == 1            # extraction unavailable -> nothing stored -> hard check fails
 
 
-@pytest.mark.xfail(strict=True, reason="needs the as_of patch in SCN.md section 12")
 def test_as_of_hides_claims_that_were_never_believed(tmp_path):
     r = runner("acme", tmp_path)
     res = {x.n: x for x in r.run_until(14)}

@@ -22,7 +22,7 @@ Statuses: `todo` · `in-progress` · `review` · `done` · `blocked`. Owner is a
 | D-DEP | Apply DEP.md: container, deploy, smoke (expect 149) | D-EVL | done | claude | main | Dockerfile; .dockerignore; .gcloudignore; requirements.txt; memledger/serve.py; scripts/deploy.sh; scripts/smoke.py; tests/test_deploy.py | 2026-10-17 22:32 |
 | D-SUB | Apply SUB.md: README, disclosure, generator (expect 150, 1 skipped, 3 xfailed) | D-DEP | done | claude | main | README.md; AI_DISCLOSURE.md; scripts/readme_queries.py; tests/test_readme.py | 2026-10-17 22:33 |
 | C1 | Move the inline Cypher in agents/team.py into queries.py; regenerate README; remove the xfail (SUB.md §2) | D-SUB | done | claude | main | memledger/agents/team.py; memledger/queries.py; README.md; tests/test_readme.py | 2026-10-17 22:34 |
-| C2a | Apply the seed + as_of patch (SCN.md §12) and tests/test_patch.py; remove the SCN xfail | D-SUB | todo | - | - | memledger/queries.py; tests/test_patch.py; tests/test_scenario.py | - |
+| C2a | Apply the seed + as_of patch (SCN.md §12) and tests/test_patch.py; remove the SCN xfail | D-SUB | done | claude | main | memledger/queries.py; tests/test_patch.py; tests/test_scenario.py; README.md | 2026-10-17 22:36 |
 | C2b | Apply the cross-process lock patch (TEN.md §5) | D-SUB | todo | - | - | memledger/memory.py | - |
 | C3 | Live run with Gemini: try_extract, demo live, fix aliases/expectations, commit the extraction cache | C2a | todo | - | - | data/.extract_cache.json; memledger/config.py; data/acme/scenario.json; data/globex/scenario.json | - |
 | C4 | Cross-agent revoke cascade in the scenario (SCN.md §9) | C3 | todo | - | - | data/acme/scenario.json; memledger/scenario.py; data/acme/eval_questions.json; tests/test_scenario.py; tests/test_eval.py | - |
@@ -66,3 +66,5 @@ Append one line per change, newest last: `YYYY-MM-DD HH:MM owner: what changed`.
 - 2026-10-17 22:33 claude: D-SUB -> done (tests: 150 passed, 1 skipped, 3 xfailed (collab deselected; full run 155 passed, 4 collab board failures, fresh-board assumptions); moved README.md and AI_DISCLOSURE.md to root, added scripts/readme_queries.py, tests/test_readme.py, regenerated README queries (35); force-graph credit already present; next: C1)
 - 2026-10-17 22:33 claude: claimed C1 on main
 - 2026-10-17 22:34 claude: C1 -> done (tests: 151 passed, 1 skipped, 2 xfailed (collab deselected; full run 155 passed, 5 collab board failures, fresh-board assumptions); moved Team.route inline Cypher to queries.SOURCE_KIND, regenerated README queries (36), removed C1 xfail in tests/test_readme.py; next: C2)
+- 2026-10-17 22:35 claude: claimed C2a on main
+- 2026-10-17 22:36 claude: C2a -> done (tests: 156 passed, 1 skipped (collab deselected), 0 xfailed; SEED ON CREATE, REVOKE revoked_from, AS_OF from promotion; test_patch.py added; SCN xfail removed; README regenerated (added to locks); next: C3)
