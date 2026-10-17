@@ -10,7 +10,7 @@ Statuses: `todo` · `in-progress` · `review` · `done` · `blocked`. Owner is a
 |---|---|---|---|---|---|---|---|
 | S1 | Apply SETUP.md: repo skeleton, pyproject, compose, env example | - | done | claude | main | pyproject.toml; docker-compose.yml; .env.example; .gitignore | 2026-10-17 22:16 |
 | D-MEM | Apply Mem.md v2: memory core + its tests (expect 23 passed) | S1 | done | claude | main | memledger/config.py; memledger/db.py; memledger/queries.py; memledger/schema.py; memledger/memory.py; memledger/__init__.py; tests/conftest.py; tests/test_memory.py; tests/test_tenancy.py | 2026-10-17 22:17 |
-| D-EXT | Apply EXT.md: extraction, ingest (expect 67) | D-MEM | in-progress | claude | main | memledger/extract.py; memledger/ingest.py; scripts/try_extract.py; tests/test_extract.py; tests/test_conflicts.py; tests/test_ingest.py | 2026-10-17 22:18 |
+| D-EXT | Apply EXT.md: extraction, ingest (expect 67) | D-MEM | done | claude | main | memledger/extract.py; memledger/ingest.py; scripts/try_extract.py; tests/test_extract.py; tests/test_conflicts.py; tests/test_ingest.py | 2026-10-17 22:18 |
 | D-TRU | Apply TRU.md: trust, CLI, query block (expect 83) | D-EXT | todo | - | - | memledger/queries.py; memledger/trust.py; scripts/trust.py; scripts/__init__.py; tests/test_trust.py | - |
 | D-AGT | Apply AGT.md: agents, query block (expect 99) | D-TRU | todo | - | - | memledger/queries.py; memledger/agents/; scripts/run_team.py; tests/test_agents.py | - |
 | D-SCN | Apply SCN.md: scenario data, runner, demo CLI (expect 113, 1 xfailed) | D-AGT | todo | - | - | data/; memledger/scenario.py; scripts/demo.py; tests/test_scenario.py | - |
@@ -43,3 +43,4 @@ Append one line per change, newest last: `YYYY-MM-DD HH:MM owner: what changed`.
 - 2026-10-17 22:17 claude: claimed D-MEM on main
 - 2026-10-17 22:17 claude: D-MEM -> done (tests: python -m pytest 29 passed 3 failed (all test_collab board tests); excl collab 23 passed (matches expected); bare pytest fails conftest import (memledger not pip-installed in venv; pip install -e . would fix); applied Mem.md: config, db, queries, schema, memory, __init__, conftest, test_memory, test_tenancy; next: D-EXT)
 - 2026-10-17 22:18 claude: claimed D-EXT on main
+- 2026-10-17 22:18 claude: D-EXT -> done (tests: 73 passed 3 failed (test_collab board tests); excl collab 67 passed (matches expected); applied EXT.md: extract, ingest, test_extract/conflicts/ingest; try_extract.py copied by hand from EXT.md s17 (apply_docs does not pick it up); not run live (needs GEMINI_API_KEY); next: D-TRU)
