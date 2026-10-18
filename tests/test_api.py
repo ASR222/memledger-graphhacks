@@ -32,9 +32,9 @@ def test_health_and_tenants(client):
 def test_full_demo_over_http(client):
     run_demo(client, "globex")
     steps = run_demo(client, "acme")
-    assert len(steps) == 15 and all(s["ok"] for s in steps)
+    assert len(steps) == 20 and all(s["ok"] for s in steps)
     assert steps[10]["action"] == "revoke" and len(steps[10]["output"]["revoked"]) == 2
-    assert client.get("/api/acme/demo").json()["last_step"] == 15
+    assert client.get("/api/acme/demo").json()["last_step"] == 20
     r = client.post("/api/acme/demo/next")
     assert r.status_code == 409 and "finished" in r.json()["detail"]
 

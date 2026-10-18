@@ -21,5 +21,8 @@
   "webhook.json": [
     {"predicate": "root_cause", "value": "redis outage", "certainty": "suspected", "evidence": "Redis cluster down since 09:50, possibly the cause of upstream latency"},
     {"predicate": "mitigation", "value": "flush cache", "certainty": "stated", "evidence": "Flush cache on all nodes"}
+  ],
+  "alerts_s3.json": [
+    {"predicate": "affects_service", "value": "checkout-api", "certainty": "stated", "evidence": "checkout-api error rate 31%, same database as payments-api"}
   ]
 }

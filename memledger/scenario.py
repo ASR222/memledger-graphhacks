@@ -87,19 +87,21 @@ def _claim(p, v, c, e):
 class OfflineChat:
     """A deterministic stand-in for the agent model, following each role's
     instructions with fixed rules. Same interface as GeminiChat. Set `hint`
-    to give the investigator a conclusion to draw (from the scenario)."""
+    to give the investigator a conclusion to draw (from the scenario), and
+    `parent` ("predicate=value") to cite that fact instead of the root cause."""
 
     def __init__(self):
         self.hint = None
+        self.parent = None
 
     def start(self, system, tools):
         role = re.search(r"You are the (\w+) agent", system).group(1)
-        return _OfflineSession(role, self.hint)
+        return _OfflineSession(role, self.hint, self.parent)
 
 
 class _OfflineSession:
-    def __init__(self, role, hint):
-        self.role, self.hint, self.phase, self.mem = role, hint, 0, {}
+    def __init__(self, role, hint, parent=None):
+        self.role, self.hint, self.parent, self.phase, self.mem = role, hint, parent, 0, {}
 
     def send(self, task):
         self.task = task
@@ -138,8 +140,11 @@ class _OfflineSession:
                 if stale and rc:
                     text = " ".join(f"Ruled out mitigation: {s['object']}." for s in stale)
                     return Reply(calls=[{"name": "conclude", "args": {"text": text, "parents": [rc["id"]]}}])
-                if self.hint and rc:
-                    return Reply(calls=[{"name": "conclude", "args": {"text": self.hint, "parents": [rc["id"]]}}])
+                cite = rc
+                if self.parent:
+                    cite = next((f for f in facts if f"{f['predicate']}={f['object']}" == self.parent), None)
+                if self.hint and cite:
+                    return Reply(calls=[{"name": "conclude", "args": {"text": self.hint, "parents": [cite["id"]]}}])
                 return Reply(text="Nothing to change.")
             c = r.get("conclude", {})
             done = [f"stored {x['predicate']}={x['value']} ({x['status']})" for x in c.get("stored", [])]
@@ -219,6 +224,8 @@ def check(tenant: str, subject: str, expect: dict, output: dict) -> list[dict]:
         got = {f"{f['predicate']}={f['object']}" for f in output.get("facts", [])}
         for want in expect["radius"]:
             add(f"in blast radius: {want}", want in got)
+    for agent in expect.get("radius_agents", []):
+        add(f"blast radius reaches {agent}", agent in (output.get("by_agent") or {}))
     if "as_of" in expect:
         got = {f"{f['predicate']}={f['object']}" for f in output.get("facts", [])}
         for want in expect["as_of"]:
@@ -302,6 +309,8 @@ class Runner:
         clock = lambda: next(ticks)  # noqa: E731
         if hasattr(self.llm, "hint"):
             self.llm.hint = st.get("offline_conclusion")
+            if hasattr(self.llm, "parent"):
+                self.llm.parent = st.get("offline_parent")
         team = Team(self.tenant, self.subject, self.extractor, self.llm, clock)
         try:
             out = self._act(team, st, clock)

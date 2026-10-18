@@ -52,6 +52,21 @@
      "expect": {"as_of": ["mitigation=flush-cache", "root_cause=bad-deploy-v2.3.1"]}},
     {"n": 15, "session": "s2", "at": "2026-10-17T14:32:00+05:30", "action": "isolation", "other": "globex",
      "say": "A second customer's graph has its own incident and none of this one.",
-     "expect": {"isolated": true}}
+     "expect": {"isolated": true}},
+    {"n": 16, "session": "s3", "at": "2026-10-17T16:00:00+05:30", "action": "observe", "source": "alerts", "file": "alerts_s3.json",
+     "say": "Session three. An alert says checkout-api is failing too, on the same database. Triage records the wider impact.",
+     "expect": {"active": ["affects_service=checkout-api", "affects_service=payments-api"]}},
+    {"n": 17, "session": "s3", "at": "2026-10-17T16:05:00+05:30", "action": "investigate", "offline_conclusion": "Mitigation: fail over checkout-api to the standby database.", "offline_parent": "affects_service=checkout-api",
+     "say": "The Investigator builds on Triage's fact: a failover for checkout-api, citing the new alert.",
+     "expect": {"soft": true, "active": ["mitigation=fail-over-checkout-api-to-the-standby-database"]}},
+    {"n": 18, "session": "s3", "at": "2026-10-17T16:20:00+05:30", "action": "preview", "source": "alerts",
+     "say": "Security finds the alert feed's token was leaked and the checkout alert was forged. Preview the blast radius: it now spans all three agents.",
+     "expect": {"radius": ["affects_service=checkout-api", "affects_service=payments-api", "severity=sev1", "status=mitigating"], "radius_agents": ["triage", "comms"]}},
+    {"n": 19, "session": "s3", "at": "2026-10-17T16:21:00+05:30", "action": "revoke", "source": "alerts",
+     "say": "One revoke withdraws everything the feed said and everything built on it, whichever agent wrote it. The runbook's root cause and rollback stand.",
+     "expect": {"revoked": ["affects_service=checkout-api", "affects_service=payments-api", "severity=sev1", "status=mitigating"], "active": ["root_cause=bad-deploy-v2.3.1", "mitigation=rollback-to-v2.3.0", "owner=payments-team"]}},
+    {"n": 20, "session": "s3", "at": "2026-10-17T16:25:00+05:30", "action": "status_update",
+     "say": "Comms' next update rebuilds the status from what survives: no checkout-api, no failover.",
+     "expect": {"soft": true, "text_excludes": ["checkout"], "active": ["status"], "citations_ok": true}}
   ]
 }

@@ -54,7 +54,7 @@ def test_acme_story_all_checks_pass(tmp_path):
     results = r.run_until(len(r.sc["steps"]))
     failed = [(x.n, c["check"]) for x in results for c in x.checks if not c["ok"]]
     assert failed == []
-    assert len(results) == 15 and all(x.checks for x in results)
+    assert len(results) == 20 and all(x.checks for x in results)
 
 
 def test_acme_story_details(tmp_path):
@@ -80,6 +80,24 @@ def test_acme_story_details(tmp_path):
     # step 13: the why answer
     assert "replaced db-pool-exhaustion" in res[13].output["text"]
     assert "runbook" in res[13].output["text"]
+
+
+def test_acme_revoke_cascade_crosses_agents(tmp_path):
+    """SCN.md §9, C4: revoking the alert feed withdraws facts written by all
+    three agents, including ones only derived from it; the runbook's stand."""
+    r = runner("acme", tmp_path)
+    res = {x.n: x for x in r.run_until(20)}
+    # step 17: the investigator's conclusion cites triage's checkout-api fact
+    assert res[17].output["tools"] == ["recall", "stale", "disputes", "conclude"]
+    # steps 18/19: the radius spans triage, investigator and comms, and the
+    # revoke withdraws exactly what the preview showed
+    assert set(res[18].output["by_agent"]) == {"triage", "investigator", "comms"}
+    assert res[18].output["derived"] >= 2
+    assert {f["id"] for f in res[18].output["facts"]} == set(res[19].output["revoked"])
+    # step 20: the next update rebuilds the status from surviving facts only
+    assert "checkout" not in res[20].output["text"] and "fail-over" not in res[20].output["text"]
+    assert "rollback-to-v2.3.0" in res[20].output["text"]
+    assert [s["status"] for s in res[20].output["stored"]] == ["active"]
 
 
 def test_session_two_uses_new_team_objects(tmp_path, monkeypatch):

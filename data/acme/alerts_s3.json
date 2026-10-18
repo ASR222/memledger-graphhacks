@@ -1,0 +1,9 @@
+[
+  {
+    "time": "2026-10-17T15:58:40+05:30",
+    "source": "prometheus",
+    "alert": "CheckoutApiErrorsHigh",
+    "summary": "checkout-api error rate 31%, same database as payments-api",
+    "action": "Escalating under INC-42"
+  }
+]
