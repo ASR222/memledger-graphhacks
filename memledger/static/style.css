@@ -127,6 +127,14 @@ select:hover, input:hover { border-color: var(--line-2); }
 .status-pill .pulse { position: relative; width: 7px; height: 7px; border-radius: 50%; background: var(--live); box-shadow: 0 0 8px var(--live); }
 .status-pill .pulse::after { content: ""; position: absolute; inset: -4px; border-radius: 50%; border: 1px solid var(--live); opacity: 0; animation: pulse 2.4s ease-out infinite; }
 @keyframes pulse { 0% { transform: scale(.5); opacity: .8; } 100% { transform: scale(1.6); opacity: 0; } }
+/* page nav, shared by / and /demo */
+.nav { display: flex; align-items: center; gap: 4px; }
+.nav a { display: inline-flex; align-items: center; height: 32px; padding: 0 12px; border-radius: 999px; white-space: nowrap;
+  font: 400 14px/1 var(--sans); color: var(--ink-2); text-decoration: none; transition: color .2s ease, background .2s ease; }
+.nav a:hover { color: var(--ink); }
+.nav a.on, .nav a[aria-current] { color: var(--ink); background: rgba(255,255,255,.07); box-shadow: inset 0 0 0 1px var(--line); }
+.top > .nav { margin-left: auto; }
+.top > .nav + .modes { margin-left: 8px; }
 /* fallback chips, if ever rendered */
 .chip { font-family: var(--mono); font-size: 11px; color: var(--ink-2); border: 1px solid var(--line); border-radius: 999px; padding: 2px 8px; }
 

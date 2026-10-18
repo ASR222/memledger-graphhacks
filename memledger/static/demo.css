@@ -15,15 +15,13 @@ html:has(body.page) { height: auto; scroll-behavior: smooth; scroll-padding-top:
 /* header: the console's .top, sticky here: wordmark left, nav centred, actions right */
 .page .top { position: sticky; top: 0; padding: 0; height: 56px; }
 .page .top .wrap { width: 100%; max-width: 1320px; height: 56px; display: grid; grid-template-columns: minmax(max-content, 1fr) auto minmax(max-content, 1fr); align-items: center; column-gap: 32px; }
-@media (min-width: 1600px) { .page .top .wrap { max-width: 1480px; } }
+@media (min-width: 1600px) { .page .top .wrap { max-width: 1600px; } }
 .page .brand { justify-self: start; text-decoration: none; color: var(--ink); align-items: center; gap: 10px; white-space: nowrap; }
 .page .tagline { display: none; }
 @media (min-width: 1440px) { .page .tagline { display: inline; } }
-.nav { justify-self: center; display: flex; align-items: center; gap: 4px; }
-.nav a { display: inline-flex; align-items: center; height: 32px; padding: 0 12px; border-radius: 999px; white-space: nowrap;
-  font: 400 14px/1 var(--sans); color: var(--ink-2); text-decoration: none; transition: color .2s ease, background .2s ease; }
-.nav a:hover { color: var(--ink); }
-.nav a.on, .nav a[aria-current="true"] { color: var(--ink); background: rgba(255,255,255,.07); box-shadow: inset 0 0 0 1px var(--line); }
+.page .nav { justify-self: center; }
+.page .nav a { color: var(--ink-2); }
+.page .nav a:hover, .page .nav a.on, .page .nav a[aria-current] { color: var(--ink); }
 .actions { justify-self: end; display: flex; align-items: center; gap: 12px; }
 .page .modes { margin-left: 0; }
 /* status: just the live dot (text in the tooltip) below 1600px, the full pill above */

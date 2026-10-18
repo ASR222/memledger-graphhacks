@@ -6,8 +6,8 @@
 <title>MemLedger · Demo and guide</title>
 <meta name="description" content="MemLedger: shared memory for incident-response agents, stored as a graph in FalkorDB. Every belief has a writer, a source, a validity window and a path, so one compromised source can be revoked everywhere in one query.">
 <link rel="icon" href="data:,">
-<link rel="stylesheet" href="/static/style.css?v=ui4">
-<link rel="stylesheet" href="/static/demo.css?v=ui4">
+<link rel="stylesheet" href="/static/style.css?v=ui5">
+<link rel="stylesheet" href="/static/demo.css?v=ui5">
 </head>
 <body class="page">
 <div class="sky" aria-hidden="true"><div class="stars"></div><div class="stars-2"></div><div class="grid"></div><div class="glow violet"></div><div class="glow cobalt"></div></div>
@@ -21,6 +21,7 @@
       <span class="tagline">Shared memory you can audit and retract</span>
     </a>
     <nav class="nav" id="siteNav" aria-label="Sections">
+      <a href="/demo" aria-current="page">Live demo</a>
       <a href="#how">How it works</a>
       <a href="#story">The story</a>
       <a href="#guide">Guide</a>
@@ -345,7 +346,7 @@ python -m memledger.mcp_server --http --port 8001  <span class="c"># streamable 
   </div>
 </footer>
 
-<script src="/static/demo.js?v=ui4"></script>
-<script src="/static/cursor.js?v=ui4" defer></script>
+<script src="/static/demo.js?v=ui5"></script>
+<script src="/static/cursor.js?v=ui5" defer></script>
 </body>
 </html>
