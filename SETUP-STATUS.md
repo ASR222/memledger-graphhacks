@@ -26,7 +26,7 @@ Statuses: `todo` · `in-progress` · `review` · `done` · `blocked`. Owner is a
 | C2b | Apply the cross-process lock patch (TEN.md §5) | D-SUB | done | claude | main | memledger/memory.py | 2026-10-17 22:37 |
 | C2c | Fix queries.SEED so all Sources are created on real FalkorDB 6.x (found in C6) | C2a | done | claude | main | memledger/queries.py; memledger/schema.py; tests/test_patch.py; README.md; docs/bench-results.txt | 2026-10-17 22:42 |
 | C3 | Live run with Gemini: try_extract, demo live, fix aliases/expectations, commit the extraction cache | C2a | done | claude | main | data/.extract_cache.json; memledger/config.py; data/acme/scenario.json; data/globex/scenario.json | 2026-10-18 02:35 |
-| C4 | Cross-agent revoke cascade in the scenario (SCN.md §9) | C3 | todo | - | - | data/acme/scenario.json; memledger/scenario.py; data/acme/eval_questions.json; tests/test_scenario.py; tests/test_eval.py | - |
+| C4 | Cross-agent revoke cascade in the scenario (SCN.md §9) | C3 | in-progress | claude | main | data/acme/scenario.json; memledger/scenario.py; data/acme/eval_questions.json; tests/test_scenario.py; tests/test_eval.py | 2026-10-18 06:07 |
 | C5 | Deploy to Cloud Run (DEP.md) and pass smoke.py --full | C3; D-VENDOR | done | claude | main | resource:cloud-run | 2026-10-18 06:02 |
 | C6 | Benchmark against real FalkorDB 6.x; save the output | D-TEN | done | claude | main | resource:bench-db; docs/bench-results.txt | 2026-10-17 22:40 |
 | C7 | Write README intro, numbers, AI_DISCLOSURE in your own words | C1; C3; C5; C6 | todo | - | - | README.md; AI_DISCLOSURE.md | - |
@@ -121,3 +121,4 @@ Append one line per change, newest last: `YYYY-MM-DD HH:MM owner: what changed`.
           ✓ acme step 15 isolation         223 ms
         PASS
 - 2026-10-18 11:36 claude: FINDING for the acme step 8 session. The extraction cache key includes the KNOWN VALUES in the graph at that step (extract.py Extractor.key). The committed cache came from C3's run with --agents live, so with --agents offline (what the public deploy uses) acme steps 5, 7 and 8 miss the cache -> extraction_failed (verified: demo.py --extract cache --agents offline fails at [5, 7, 8]; smoke --full fails the same way). That is why C5 is deployed with EXTRACT=golden. To switch the deploy to EXTRACT=cache, build the cache with `demo.py --tenant acme --extract live --agents offline --reset --all` (and globex likewise), commit data/.extract_cache.json, confirm `demo.py --extract cache --agents offline` passes for both tenants, then rebuild the image and redeploy with MEMLEDGER_EXTRACT=cache.
+- 2026-10-18 06:07 claude: claimed C4 on main
