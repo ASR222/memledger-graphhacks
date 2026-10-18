@@ -1,4 +1,5 @@
-/* Scrollbars, the violet cursor and the cursor glow come from style.css, which this page loads first. */
+/* Scrollbars, the cursor glow and the full cursor rules come from style.css, which this page loads first. */
+html, body { cursor: url("assets/cursor.png") 6 2, auto; }
 /* MemLedger /demo landing page: layout only. Tokens, fonts, the header, glass,
    status pills and agent colours come from style.css, shared with the console. */
 
@@ -32,7 +33,7 @@ html:has(body.page) { height: auto; scroll-behavior: smooth; scroll-padding-top:
   .page .status-pill .label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 }
 .page .top .btn { height: 36px; padding: 0 16px; }
-.menu-toggle { display: none; width: 36px; height: 36px; border-radius: 999px; border: 1px solid var(--line-2); background: transparent; cursor: pointer; padding: 0; place-content: center; gap: 4px; }
+.menu-toggle { display: none; width: 36px; height: 36px; border-radius: 999px; border: 1px solid var(--line-2); background: transparent; padding: 0; place-content: center; gap: 4px; }
 .menu-toggle span { display: block; width: 14px; height: 1.5px; background: var(--ink); border-radius: 1px; transition: transform .2s ease, opacity .2s ease; }
 .menu-toggle[aria-expanded="true"] span:nth-child(1) { transform: translateY(5.5px) rotate(45deg); }
 .menu-toggle[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
@@ -126,7 +127,7 @@ tr.hl td:not(.n) { color: var(--ink); }
 /* code */
 .page pre { position: relative; background: rgba(11, 11, 18, .7); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; overflow-x: auto; font: 13px/1.6 var(--mono); margin: 10px 0 0; color: #d6d6de; }
 .page pre .c { color: var(--muted); }
-.copy { position: absolute; top: 9px; right: 9px; font: 500 11px var(--sans); color: var(--ink-2); background: var(--glass); border: 1px solid var(--line-2); border-radius: 999px; padding: 3px 10px; cursor: pointer; }
+.copy { position: absolute; top: 9px; right: 9px; font: 500 11px var(--sans); color: var(--ink-2); background: var(--glass); border: 1px solid var(--line-2); border-radius: 999px; padding: 3px 10px; }
 .copy:hover { color: var(--ink); }
 
 /* console tour */
@@ -137,7 +138,7 @@ tr.hl td:not(.n) { color: var(--ink); }
 .note { border: 1px solid rgba(251,191,36,.22); background: rgba(251,191,36,.05); padding: 14px 18px; border-radius: 14px; color: #e9dcc0; font-size: 15px; font-weight: 300; margin: 20px 0 0; }
 .note.ok { border-color: rgba(52,211,153,.22); background: rgba(52,211,153,.05); color: #c6eadb; }
 .page details { background: var(--glass); border: 1px solid var(--line); border-radius: 14px; padding: 14px 18px; margin: 10px 0; }
-.page details summary { cursor: pointer; font: 500 16px var(--serif); }
+.page details summary { font: 500 16px var(--serif); }
 .page details p { color: var(--ink-2); margin: 8px 0 0; font-weight: 300; }
 
 .page footer { border-top: 1px solid var(--line); padding: 36px 0 56px; color: var(--muted); font-size: 13px; }
