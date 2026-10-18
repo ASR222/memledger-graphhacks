@@ -222,6 +222,7 @@ class GeminiLLM:
         self.model = model or config.GEMINI_MODEL
         self.fallback_model = fallback_model
         self.sleep = sleep
+        self.last_model = None   # the model that answered the last call
         if client is None:
             from google import genai
             client = genai.Client(api_key=api_key or config.GEMINI_API_KEY)
@@ -229,8 +230,10 @@ class GeminiLLM:
 
     def __call__(self, system: str, user: str) -> str:
         from google.genai import types
+        self.last_model = None
         resp = llm_retry.generate(
             self.client, self.model, fallback=self.fallback_model, sleep=self.sleep,
+            on_answer=lambda m: setattr(self, "last_model", m),
             contents=user,
             config=types.GenerateContentConfig(
                 system_instruction=system,
@@ -304,9 +307,13 @@ class Extractor:
             try:
                 out = self.llm(SYSTEM_PROMPT, user)
                 parsed = json.loads(out)
-                with self._lock:
-                    self._cache[k] = out
-                    self._save()
+                # The key names the main model; a fallback model's answer is
+                # used for this call but never cached under it.
+                answered = getattr(self.llm, "last_model", None)
+                if answered is None or answered == getattr(self.llm, "model", answered):
+                    with self._lock:
+                        self._cache[k] = out
+                        self._save()
                 return parsed
             except Exception as e:  # API error or invalid JSON
                 last = e

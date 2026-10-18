@@ -1,4 +1,6 @@
 """Rate-limit resilience for Gemini calls: fake errors, fake sleep, no network."""
+import json
+
 import pytest
 from google.genai import errors
 
@@ -143,3 +145,21 @@ def test_daily_quota_without_fallback_raises_at_once():
     with pytest.raises(errors.ClientError):
         run(client, attempts=5)
     assert client.models_called == ["main"]
+
+
+def test_fallback_answers_are_never_cached(tmp_path):
+    """C12: an answer from the fallback model is used but not cached under the main model's key."""
+    cache = tmp_path / "cache.json"
+    fb = Resp()
+    fb.text = '{"claims": [{"predicate": "mitigation", "value": "x", "certainty": "stated", "evidence": "x"}]}'
+    llm = X.GeminiLLM(model="main", client=Client([daily_quota(), fb]), fallback_model="lite", sleep=lambda s: None)
+    ex = X.Extractor(llm, cache_path=str(cache), mode="live", sleep=lambda s: None)
+    assert ex.raw("text", "inc-1", {}) == {"claims": [{"predicate": "mitigation", "value": "x",
+                                                       "certainty": "stated", "evidence": "x"}]}
+    assert llm.last_model == "lite" and not cache.exists()
+    # the main model answering is cached as before, under the main model's key
+    llm.client = Client([Resp()])
+    assert ex.raw("text", "inc-1", {}) == {"claims": []}
+    assert llm.last_model == "main"
+    assert list(json.loads(cache.read_text()).values()) == ['{"claims": []}']
+

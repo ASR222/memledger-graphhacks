@@ -78,14 +78,18 @@ def with_retry(fn, *, attempts: int | None = None, sleep=time.sleep, jitter=rand
 
 
 def generate(client, model: str, *, fallback: str | None = None, attempts: int | None = None,
-             sleep=time.sleep, jitter=random.random, **kwargs):
-    """client.models.generate_content with retries and an optional fallback model."""
+             sleep=time.sleep, jitter=random.random, on_answer=None, **kwargs):
+    """client.models.generate_content with retries and an optional fallback model.
+    on_answer(model) is called with the model that actually answered."""
     fallback = config.GEMINI_FALLBACK_MODEL if fallback is None else fallback
     models = [model] + ([fallback] if fallback and fallback != model else [])
     for n, m in enumerate(models):
         try:
-            return with_retry(lambda: client.models.generate_content(model=m, **kwargs),
+            resp = with_retry(lambda: client.models.generate_content(model=m, **kwargs),
                               attempts=attempts, sleep=sleep, jitter=jitter)
+            if on_answer is not None:
+                on_answer(m)
+            return resp
         except Exception as e:
             if not is_transient(e) or n == len(models) - 1:
                 raise

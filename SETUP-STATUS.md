@@ -34,7 +34,7 @@ Statuses: `todo` · `in-progress` · `review` · `done` · `blocked`. Owner is a
 | C9 | Gemini rate-limit resilience: retry 429 honoring retryDelay, backoff, fallback model | D-SUB | done | claude | main | memledger/llm_retry.py; memledger/extract.py; memledger/agents/llm.py; memledger/config.py; tests/test_llm_retry.py | 2026-10-17 22:59 |
 | C10 | C3 follow-ups: relax incident-scope prompt rule, daily-quota fast fallback, agent 429 no crash | C3; C9 | done | claude | main | memledger/extract.py; memledger/llm_retry.py; memledger/scenario.py; scripts/demo.py; data/.extract_cache.json; tests/test_extract.py; tests/test_llm_retry.py; tests/test_scenario.py | 2026-10-18 04:41 |
 | D-SCN2 | Update docs/SCN.md (timeline §2, §9) for acme steps 16-20 (C4) | C4 | done | claude | main | docs/SCN.md | 2026-10-18 06:15 |
-| C12 | Cache safety before C11: never cache fallback-model answers under the main model's key; check C10 v1-reuse impact on acme 5/7/8/16/17/20 | C10; C4 | in-progress | claude | main | memledger/extract.py; memledger/llm_retry.py; tests/test_llm_retry.py; tests/test_extract.py; scripts/demo.py | 2026-10-18 06:21 |
+| C12 | Cache safety before C11: never cache fallback-model answers under the main model's key; check C10 v1-reuse impact on acme 5/7/8/16/17/20 | C10; C4 | done | claude | main | memledger/extract.py; memledger/llm_retry.py; tests/test_llm_retry.py; tests/test_extract.py; scripts/demo.py | 2026-10-18 06:23 |
 | V1 | Record the 3-minute video (SUB.md §6) | C5; C7 | todo | - | - | resource:cloud-run | - |
 | V2 | Submit on WeMakeDevs, Track 02 (SUB.md §8 checklist) | V1; C8 | todo | - | - | - | - |
 
@@ -131,3 +131,14 @@ Append one line per change, newest last: `YYYY-MM-DD HH:MM owner: what changed`.
 - 2026-10-18 06:14 claude: claimed D-SCN2 on main
 - 2026-10-18 06:15 claude: D-SCN2 -> done (docs/SCN.md: §2 timeline rows 16-20, §9 rewritten (webhook: one agent; alerts: three agents, extraction/caching note), plus §1 story bullet for session 3 and feature-table row so the doc stays consistent; tests 174 passed, 1 skipped)
 - 2026-10-18 06:21 claude: claimed C12 on main
+- 2026-10-18 06:23 claude: C12 -> done (tests: 175 passed, 1 skipped (test_collab deselected). (1) C9 finding fixed by NOT caching fallback answers: llm_retry.generate(on_answer=) reports the model that answered, GeminiLLM.last_model records it, Extractor caches only when the main model answered; test_fallback_answers_are_never_cached. (2) C10 finding: probe replayed acme 1-20 with --agents offline against the committed cache (41 entries, model gemini-3.5-flash): NO v2 or v1 key exists for steps 5, 7, 8, 16, 20 (step 17 made no call in the cache-only replay because step 16 missed; in C11 its key depends on live step-16 output). Steps 3-20 all miss; only steps 1-2 hit (non-empty ext-v1 answers for alerts.json, logs.txt). The global reuse rule does not affect C11's target steps, so no --refresh-steps was added (scripts/demo.py untouched). Note for C11: steps 1-2 will reuse their v1 answers, which is intended by the C10 rule; next: C11)
+- 2026-10-18 11:54 claude: post-submission follow-ups from the C2c/C9/C10/C4 code review (left as-is by C12; the 2 C11-relevant findings were handled in C12):
+  - llm_retry.with_retry sleeps on the request thread (up to ~5x61 s per model x 2 models): in live API mode that exceeds Cloud Run's 300 s timeout and holds threadpool slots. Harmless while the deploy is offline.
+  - llm_retry._DAILY_RE matches 'daily'/'per day' anywhere in the error text, not only in the QuotaFailure quotaId, so a per-minute 429 can skip retries.
+  - scenario.Runner: an agent 429 mid-step leaves earlier tool writes in the graph, yet marks the step failed and advances progress.
+  - OfflineChat: an offline_parent that matches no active fact silently yields 'Nothing to change.' (step 17 is soft, so only the unit test catches it).
+  - acme step 18 hard-checks radius_agents for triage and comms only; with live agents the investigator can be missing and the 'three agents' narration would be false. Consider a soft check for investigator.
+  - Extractor breaks out of its own attempts on any transient error, so GEMINI_MAX_RETRIES=1 makes a single 503 fail extraction (untested behaviour change from C9).
+  - llm_retry parses retryDelay twice (a walk over the details and a regex over the message); merge them.
+  - GeminiLLM and GeminiChat duplicate the client/fallback/sleep plumbing for llm_retry.generate.
+
