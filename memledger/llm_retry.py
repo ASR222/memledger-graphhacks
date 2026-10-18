@@ -6,7 +6,9 @@ Retries 429/RESOURCE_EXHAUSTED and 503/UNAVAILABLE, waiting the server's
 suggested retryDelay when the error carries one, else exponential backoff
 (2, 4, 8, ... capped at MAX_BACKOFF). When retries run out on a transient
 error and a fallback model is configured, the fallback gets the same policy.
-Any other error is raised at once, unchanged.
+A daily-quota 429 (QuotaFailure quotaId like "...PerDay...") is not retried:
+waiting won't help today, so it goes straight to the fallback model (or is
+raised when there is none). Any other error is raised at once, unchanged.
 """
 import random
 import re
@@ -18,6 +20,7 @@ MAX_BACKOFF = 60.0
 TRANSIENT_CODES = {429, 503}
 TRANSIENT_STATUSES = {"RESOURCE_EXHAUSTED", "UNAVAILABLE"}
 _DELAY_RE = re.compile(r"retryDelay['\"]?\s*[:=]\s*['\"]?(\d+(?:\.\d+)?)s")
+_DAILY_RE = re.compile(r"per_?day|per[ -]day|daily", re.I)
 
 
 def is_transient(e: BaseException) -> bool:
@@ -53,6 +56,13 @@ def retry_delay(e: BaseException) -> float | None:
     return d
 
 
+def is_daily_quota(e: BaseException) -> bool:
+    """True for a 429 caused by a per-day quota, which no short wait will clear."""
+    if getattr(e, "code", None) != 429 and getattr(e, "status", None) != "RESOURCE_EXHAUSTED":
+        return False
+    return bool(_DAILY_RE.search(f"{getattr(e, 'details', '')} {e}"))
+
+
 def with_retry(fn, *, attempts: int | None = None, sleep=time.sleep, jitter=random.random):
     """Call fn(), retrying transient errors up to `attempts` calls in total."""
     attempts = max(1, attempts if attempts is not None else config.GEMINI_MAX_RETRIES)
@@ -60,7 +70,7 @@ def with_retry(fn, *, attempts: int | None = None, sleep=time.sleep, jitter=rand
         try:
             return fn()
         except Exception as e:
-            if not is_transient(e) or i == attempts - 1:
+            if not is_transient(e) or is_daily_quota(e) or i == attempts - 1:
                 raise
             d = retry_delay(e)
             wait = d + jitter() if d is not None else min(2.0 ** (i + 1), MAX_BACKOFF)

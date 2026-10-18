@@ -180,6 +180,28 @@ def test_cache_key_depends_on_known_values(tmp_path):
     assert len(llm.calls) == 2
 
 
+def test_old_prompt_version_cache_reused_only_when_non_empty(tmp_path, monkeypatch):
+    """ext-v2 widened the scope rule: old non-empty answers stay valid, old empty ones are redone."""
+    path = str(tmp_path / "c.json")
+    old = X.Extractor(FakeLLM([GOOD, json.dumps({"claims": []})]), cache_path=path, model_name="fake")
+    monkeypatch.setattr(X, "PROMPT_VERSION", "ext-v1")
+    old.extract(TEXT, "INC-42")
+    old.extract("Redis cluster down since 09:50.", "INC-42")
+    monkeypatch.undo()
+    new = X.Extractor(FakeLLM([GOOD]), cache_path=path, model_name="fake")
+    assert new.extract(TEXT, "INC-42")[0][0].value == "sev1" and new.llm.calls == []
+    new.extract("Redis cluster down since 09:50.", "INC-42")
+    assert len(new.llm.calls) == 1        # the empty ext-v1 answer is not reused
+
+
+def test_prompt_scopes_claims_to_the_filing_incident():
+    """Text filed under the incident is in scope even when it never names it (acme webhook.json)."""
+    p = X.SYSTEM_PROMPT
+    assert "even when it never names it" in p and "different incident" in p
+    assert "disagrees with KNOWN VALUES" in p and "recommended" in p
+    assert "named in INCIDENT only" not in p
+
+
 def test_cache_only_miss_is_reported_not_raised(tmp_path):
     ex = X.Extractor(None, cache_path=str(tmp_path / "c.json"), mode="cache_only")
     kept, dropped = ex.extract(TEXT, "INC-42")

@@ -13,6 +13,15 @@ def rate_limited(delay=None):
                                               "message": "quota exceeded", "details": details}})
 
 
+def daily_quota():
+    details = [{"@type": "type.googleapis.com/google.rpc.QuotaFailure",
+                "violations": [{"quotaMetric": "generativelanguage.googleapis.com/generate_content_free_tier_requests",
+                                "quotaId": "GenerateRequestsPerDayPerProjectPerModel-FreeTier", "quotaValue": "20"}]},
+               {"@type": "type.googleapis.com/google.rpc.RetryInfo", "retryDelay": "82800s"}]
+    return errors.ClientError(429, {"error": {"code": 429, "status": "RESOURCE_EXHAUSTED",
+                                              "message": "quota exceeded", "details": details}})
+
+
 def unavailable():
     return errors.ServerError(503, {"error": {"code": 503, "status": "UNAVAILABLE", "message": "overloaded"}})
 
@@ -116,3 +125,21 @@ def test_agent_chat_retries_rate_limits():
     chat = GeminiChat(model="main", client=client, fallback_model="", sleep=sleeps.append)
     reply = chat.start("SYS", []).send("hello")
     assert reply.text == "hi" and len(sleeps) == 1 and client.models_called == ["main", "main"]
+
+
+def test_daily_quota_detected():
+    assert R.is_daily_quota(daily_quota())
+    assert not R.is_daily_quota(rate_limited("30s")) and not R.is_daily_quota(unavailable())
+
+
+def test_daily_quota_falls_back_without_sleeping():
+    client = Client([daily_quota(), Resp()])
+    resp, sleeps = run(client, attempts=5, fallback="backup")
+    assert isinstance(resp, Resp) and sleeps == [] and client.models_called == ["main", "backup"]
+
+
+def test_daily_quota_without_fallback_raises_at_once():
+    client = Client([daily_quota(), Resp()])
+    with pytest.raises(errors.ClientError):
+        run(client, attempts=5)
+    assert client.models_called == ["main"]

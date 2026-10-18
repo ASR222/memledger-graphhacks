@@ -12,12 +12,13 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 
-from . import memory, schema, trust
+from . import llm_retry, memory, schema, trust
 from .agents.llm import Reply
 from .agents.team import Team
 from .db import get_db, graph
 
 DATA = Path(__file__).resolve().parents[1] / "data"
+AGENT_ACTIONS = {"investigate": "investigator", "status_update": "comms", "ask": None}
 ACTIONS = {"observe", "investigate", "status_update", "ask", "preview", "revoke", "as_of", "isolation"}
 
 
@@ -248,6 +249,13 @@ class StepResult:
         return [c for c in self.checks if c["soft"] and not c["ok"]]
 
 
+def _short(e: BaseException, limit: int = 120) -> str:
+    """First line of an error, without the JSON payload Gemini errors carry."""
+    msg = str(e).splitlines()[0] if str(e) else type(e).__name__
+    msg = msg.split(". {", 1)[0]
+    return msg if len(msg) <= limit else msg[:limit - 3] + "..."
+
+
 class Runner:
     """Runs a scenario against the tenant's graph, one step at a time.
 
@@ -295,9 +303,19 @@ class Runner:
         if hasattr(self.llm, "hint"):
             self.llm.hint = st.get("offline_conclusion")
         team = Team(self.tenant, self.subject, self.extractor, self.llm, clock)
-        out = self._act(team, st, clock)
-        res = StepResult(n, st["action"], st["session"], st["at"], st.get("say", ""), out,
-                         check(self.tenant, self.subject, st.get("expect", {}), out))
+        try:
+            out = self._act(team, st, clock)
+        except Exception as e:
+            # The agent model ran out of rate limit (retries and any fallback
+            # already spent): report this step as failed instead of crashing.
+            if st["action"] not in AGENT_ACTIONS or not llm_retry.is_transient(e):
+                raise
+            out = {"agent": AGENT_ACTIONS[st["action"]] or st.get("agent"), "text": "",
+                   "tools": [], "error": f"agent model unavailable: {_short(e)}"}
+        checks = check(self.tenant, self.subject, st.get("expect", {}), out)
+        if out.get("error"):
+            checks.insert(0, {"check": out["error"], "ok": False, "soft": False})
+        res = StepResult(n, st["action"], st["session"], st["at"], st.get("say", ""), out, checks)
         self._set_last(max(last, n))
         return res
 

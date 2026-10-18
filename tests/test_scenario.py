@@ -176,3 +176,38 @@ def test_isolation_when_other_tenant_never_ran(tmp_path, lite_db):
     lite_db.select_graph("memory_globex").delete()
     res = r.run_step(15)
     assert res.ok and res.output["other_exists"] is False
+
+
+def test_agent_rate_limit_fails_the_step_without_crashing(tmp_path, capsys):
+    """A 429 that outlasts retries in an agent step is a failed step, not a traceback."""
+    from google.genai import errors
+
+    class RateLimitedChat:
+        hint = None
+
+        def start(self, system, tools):
+            raise errors.ClientError(429, {"error": {"code": 429, "status": "RESOURCE_EXHAUSTED",
+                                                     "message": "quota exceeded"}})
+
+    r = runner("acme", tmp_path)
+    r.run_until(2)
+    r.llm = RateLimitedChat()
+    res = r.run_step(3)
+    assert not res.ok and res.checks[0]["check"].startswith("agent model unavailable: 429")
+    assert r.last_step() == 3            # the story can continue
+    demo.show(res)
+    assert "✗ agent model unavailable: 429 RESOURCE_EXHAUSTED" in capsys.readouterr().out
+
+
+def test_agent_non_rate_limit_errors_still_raise(tmp_path):
+    class Broken:
+        hint = None
+
+        def start(self, system, tools):
+            raise ValueError("bug")
+
+    r = runner("acme", tmp_path)
+    r.run_until(2)
+    r.llm = Broken()
+    with pytest.raises(ValueError):
+        r.run_step(3)
