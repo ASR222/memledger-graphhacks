@@ -25,11 +25,12 @@ No new queries. Requires everything from Mem.md v2, EXT.md, TRU.md and AGT.md.
 
 ## 1. The story (SCN-1)
 
-**INC-42: payments-api latency spike, acme.** Two sessions, five input sources, three agents.
+**INC-42: payments-api latency spike, acme.** Three sessions, five input sources, three agents.
 
 - **Session 1 (morning).** An alert fires (p99 4.1 s, SEV-1). Logs show the DB connection pool is exhausted, so the team blames the pool. The Investigator concludes "raise the pool size" from that. Comms sends an update.
 - **Session 2 (afternoon, new process, empty chats).** A runbook review says the pool was only a symptom: the real cause is deploy v2.3.1. The old root cause is **closed, not overwritten**, and the Investigator notices that the pool-size fix was based on a cause nobody believes any more, so it rules it out. A forwarded "partner" message claims a DDoS and tries a prompt injection; it's quarantined. A cache integration reports Redis down and recommends flushing the cache. It's trusted, so the flush becomes a mitigation, while its hedged guess at a cause is quarantined. Comms updates stakeholders.
 - **The twist.** The cache integration turns out to be compromised. You preview its blast radius, revoke it, and the next status update no longer mentions the flush. Asking "why" shows the root cause's path back to the runbook. Time travel shows the team did believe the flush at 13:55. A second customer, globex, sees none of this.
+- **Session 3 (cross-agent cascade, steps 16–20, added by C4).** An alert says checkout-api is failing too; Triage records it and the Investigator concludes a failover from it. Security then finds the alert feed's token was leaked and that alert forged. The blast-radius preview of `alerts` now spans **all three agents**, and one revoke withdraws everything the feed said and everything built on it. The runbook's root cause and rollback stand, and Comms rebuilds the status from what survives.
 
 ### 1.1 Every beat maps to a Track 02 focus area
 
@@ -51,6 +52,7 @@ And every MemLedger feature appears once:
 | Hedged claim from a trusted source | 8 |
 | Citations checked against memory | 4, 9, 12, 13 |
 | Blast-radius preview and revocation | 10, 11 |
+| Cross-agent revoke cascade (derived facts, three writers) | 18, 19 |
 | Why / provenance | 13 |
 | Time travel | 14 |
 | Tenant isolation | 15 |
@@ -76,6 +78,11 @@ And every MemLedger feature appears once:
 | 13 | s2 | 14:30 | ask comms "why…root cause?" | comms | cites the fact; runbook; replaced db-pool | soft |
 | 14 | s2 | 14:31 | as_of 13:55 | — | flush-cache was believed then | hard |
 | 15 | s2 | 14:32 | isolation vs globex | — | no facts cross tenants | hard |
+| 16 | s3 | 16:00 | observe `alerts` (`alerts_s3.json`) | triage | checkout-api active alongside payments-api | hard |
+| 17 | s3 | 16:05 | investigate | investigator | concludes a checkout-api failover citing Triage's new fact (offline: `offline_parent`) | soft |
+| 18 | s3 | 16:20 | preview `alerts` | — | blast radius: checkout-api, payments-api, sev1, status; reaches triage and comms (offline also the investigator) | hard |
+| 19 | s3 | 16:21 | revoke `alerts` | — | those facts revoked; deploy, rollback and owner still active | hard |
+| 20 | s3 | 16:25 | status_update | comms | fresh status citing only survivors; no checkout | soft |
 
 **Hard checks** depend only on extraction and memory rules, so with the extraction cache filled they pass every time. **Soft checks** depend on what a live agent model writes; a miss prints `~` and a warning, not a failure.
 
@@ -277,14 +284,22 @@ Narration: read each step's `say` line (`--list` prints them all). Pause on step
 
 ---
 
-## 9. Blast radius in this story: one agent, not three
+## 9. Blast radius in this story: one agent, then three
 
-In this run the webhook's blast radius is **2 facts, both written by the Investigator** (flush-cache and the quarantined redis-outage). Comms' step-9 status update cites flush-cache, but the status value ("mitigating") is the same as the session-1 status, so it's **stored as a corroboration of the existing status fact, which doesn't add new parent links**. The status fact therefore isn't revoked.
+**Steps 10–11 (the webhook): one agent.** The webhook's blast radius is **2 facts, both written by the Investigator** (flush-cache and the quarantined redis-outage). Comms' step-9 status update cites flush-cache, but the status value ("mitigating") is the same as the session-1 status, so it's **stored as a corroboration of the existing status fact, which doesn't add new parent links**. The status fact therefore isn't revoked. Narrate what's true here: "the webhook's facts are withdrawn and Comms' next update drops the flush."
 
-The cross-agent cascade does work when a conclusion is new (AGT.md `test_revoke_removes_conclusions_and_next_update_changes`), but it doesn't happen in this story. Options:
-- **Narrate what's true:** "the webhook's facts are withdrawn and Comms' next update drops the flush." Don't claim three agents.
-- **Make it cross-agent:** have something conclude a new fact from flush-cache before step 10 (for example an Investigator conclusion "Owner should be the cache team" citing flush-cache). Owner is single-valued and changes, so it's a new fact with a parent link.
-- The underlying behavior (corroboration doesn't record new parents) is a memory-core design choice. Changing it would mean editing Mem.md; it isn't in the §12 patch.
+**Steps 16–20 (the alert feed): three agents** (task C4, appended after step 15 so steps 1–15 and their extraction-cache keys are unchanged):
+- **16:** a forged alert (`alerts_s3.json`) adds `affects_service=checkout-api`, written by **Triage**.
+- **17:** the **Investigator** concludes "fail over checkout-api to the standby database" with that fact as its parent. Offline, the step's `offline_parent` picks the parent; a live Investigator chooses its own, so this step is soft.
+- **18:** previewing `alerts` gives 5 facts. Offline that's triage 3 (checkout-api, payments-api, sev1), investigator 1 (the failover, derived) and **comms 1**: the session-1 status fact, which Comms stored in step 4 with the step-1 alert facts as parents. The step checks `radius_agents` for triage and comms (hard); `tests/test_scenario.py` asserts all three offline.
+- **19:** one revoke withdraws exactly the previewed facts. Root cause, rollback and owner (runbook) stay active.
+- **20:** with the old status revoked, Comms' update stores a **new** status fact citing only surviving facts, with no checkout-api and no failover.
+
+Source-wide revocation also withdraws the genuine 09:58 alert facts (payments-api, sev1). That's by design: once a feed's token is known to be leaked, nothing it said can be trusted. Say so if a judge asks.
+
+**Extraction:** golden needs no calls. In cache or live mode, steps 16, 17 and 20 add 3 extractions per run (the new alert file and two agent texts). The cache key includes the known values at each step, so the cache must be built with the same agents mode it's replayed with (`--agents offline` for the public deploy).
+
+The underlying behavior (corroboration doesn't record new parents) is a memory-core design choice. Changing it would mean editing Mem.md; it isn't in the §12 patch.
 
 ---
 
