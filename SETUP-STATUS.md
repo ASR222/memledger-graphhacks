@@ -35,6 +35,7 @@ Statuses: `todo` · `in-progress` · `review` · `done` · `blocked`. Owner is a
 | C10 | C3 follow-ups: relax incident-scope prompt rule, daily-quota fast fallback, agent 429 no crash | C3; C9 | done | claude | main | memledger/extract.py; memledger/llm_retry.py; memledger/scenario.py; scripts/demo.py; data/.extract_cache.json; tests/test_extract.py; tests/test_llm_retry.py; tests/test_scenario.py | 2026-10-18 04:41 |
 | D-SCN2 | Update docs/SCN.md (timeline §2, §9) for acme steps 16-20 (C4) | C4 | done | claude | main | docs/SCN.md | 2026-10-18 06:15 |
 | C12 | Cache safety before C11: never cache fallback-model answers under the main model's key; check C10 v1-reuse impact on acme 5/7/8/16/17/20 | C10; C4 | done | claude | main | memledger/extract.py; memledger/llm_retry.py; tests/test_llm_retry.py; tests/test_extract.py; scripts/demo.py | 2026-10-18 06:23 |
+| C11 | Fill extraction cache for the deployed config (acme --extract live --agents offline on gemini-3.5-flash, no fallback); redeploy with EXTRACT=cache | C12 | in-progress | claude | main | data/.extract_cache.json; resource:cloud-run | 2026-10-18 07:08 |
 | V1 | Record the 3-minute video (SUB.md §6) | C5; C7 | todo | - | - | resource:cloud-run | - |
 | V2 | Submit on WeMakeDevs, Track 02 (SUB.md §8 checklist) | V1; C8 | todo | - | - | - | - |
 
@@ -142,3 +143,4 @@ Append one line per change, newest last: `YYYY-MM-DD HH:MM owner: what changed`.
   - llm_retry parses retryDelay twice (a walk over the details and a regex over the message); merge them.
   - GeminiLLM and GeminiChat duplicate the client/fallback/sleep plumbing for llm_retry.generate.
 
+- 2026-10-18 07:08 claude: claimed C11 on main
