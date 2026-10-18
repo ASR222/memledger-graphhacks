@@ -54,22 +54,6 @@ html:has(body.page) { height: auto; scroll-behavior: smooth; scroll-padding-top:
 .btn.primary { background: var(--ink); border-color: var(--ink); color: var(--bg) !important; font-weight: 600; }
 .btn.primary:hover { background: #fff; }
 
-/* eye tracker in the brand (ported from Watcher) */
-.eyt { position: relative; display: grid; place-items: center; flex: none; }
-.eyt-ball { width: var(--eyt-size, 100px); height: var(--eyt-size, 100px); overflow: visible; }
-.eyt-body { fill: var(--ink); }
-.eyt-eye { fill: var(--bg); }
-.eyt-ball[data-poke] { cursor: pointer; transform-origin: center; transition: scale 420ms cubic-bezier(0.24, 1.34, 0.38, 1); -webkit-tap-highlight-color: transparent; }
-.eyt-ball[data-poke]:active { scale: 0.96; transition-duration: 160ms; transition-timing-function: ease; }
-.eyt-say { position: absolute; left: calc(50% + var(--eyt-size, 100px) * 0.36); top: calc(50% + var(--eyt-size, 100px) * 0.3); z-index: 30;
-  display: inline-flex; align-items: center; gap: 2px; min-height: 34px; padding: 0 16px; border-radius: 6px 14px 14px 14px;
-  background: var(--tint, var(--triage)); box-shadow: inset 0 -1.5px 0 rgba(0,0,0,.1), 0 8px 24px rgba(0,0,0,.4);
-  color: #07070b; font: 600 13px var(--sans); white-space: nowrap; transform-origin: top left; opacity: 0; scale: .85; pointer-events: none;
-  transition: opacity 160ms ease, scale 220ms cubic-bezier(0.24, 1.34, 0.38, 1), background-color 220ms ease; }
-.eyt-say[data-on] { opacity: 1; scale: 1; }
-.eyt-caret { width: 1.5px; height: 13px; border-radius: 1px; background: #07070b; animation: pet-caret 1s steps(1) infinite; }
-@keyframes pet-caret { 50% { opacity: 0; } }
-
 /* hero */
 .hero { padding: 72px 0 48px; text-align: center; }
 .hero .eyebrow { display: inline-flex; align-items: center; gap: 8px; }
