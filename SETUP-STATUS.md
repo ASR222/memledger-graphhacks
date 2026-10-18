@@ -35,7 +35,7 @@ Statuses: `todo` · `in-progress` · `review` · `done` · `blocked`. Owner is a
 | C10 | C3 follow-ups: relax incident-scope prompt rule, daily-quota fast fallback, agent 429 no crash | C3; C9 | done | claude | main | memledger/extract.py; memledger/llm_retry.py; memledger/scenario.py; scripts/demo.py; data/.extract_cache.json; tests/test_extract.py; tests/test_llm_retry.py; tests/test_scenario.py | 2026-10-18 04:41 |
 | D-SCN2 | Update docs/SCN.md (timeline §2, §9) for acme steps 16-20 (C4) | C4 | done | claude | main | docs/SCN.md | 2026-10-18 06:15 |
 | C12 | Cache safety before C11: never cache fallback-model answers under the main model's key; check C10 v1-reuse impact on acme 5/7/8/16/17/20 | C10; C4 | done | claude | main | memledger/extract.py; memledger/llm_retry.py; tests/test_llm_retry.py; tests/test_extract.py; scripts/demo.py | 2026-10-18 06:23 |
-| C11 | Fill extraction cache for the deployed config (acme --extract live --agents offline on gemini-3.5-flash, no fallback); redeploy with EXTRACT=cache | C12 | in-progress | claude | main | data/.extract_cache.json; resource:cloud-run | 2026-10-18 07:08 |
+| C11 | Fill extraction cache for the deployed config (acme --extract live --agents offline on gemini-3.5-flash, no fallback); redeploy with EXTRACT=cache | C12 | blocked | claude | main | data/.extract_cache.json; resource:cloud-run | 2026-10-18 07:15 |
 | V1 | Record the 3-minute video (SUB.md §6) | C5; C7 | todo | - | - | resource:cloud-run | - |
 | V2 | Submit on WeMakeDevs, Track 02 (SUB.md §8 checklist) | V1; C8 | todo | - | - | - | - |
 
@@ -144,3 +144,4 @@ Append one line per change, newest last: `YYYY-MM-DD HH:MM owner: what changed`.
   - GeminiLLM and GeminiChat duplicate the client/fallback/sleep plumbing for llm_retry.generate.
 
 - 2026-10-18 07:08 claude: claimed C11 on main
+- 2026-10-18 07:15 claude: C11 blocked: live run stopped on a DAILY-quota 429 at step 20 after 8 successful gemini-3.5-flash calls (steps 3,4,5,6,7,9,16,17; no fallback, spaced >=12 s). Step 8 (webhook) got NO answer: its call failed after llm_retry's retries (non-daily transient 429/503), so it was dropped as extraction_failed and steps 8/10/11/14 failed; those retries likely used the remaining daily requests. Per instructions: nothing committed (data/.extract_cache.json restored), site stays on EXTRACT=golden, no second run. A copy of the partial cache is in the session scratch dir (/tmp/claude-1000/cache_c11_partial.json); only its step 3-7 entries are on the correct chain (steps 9/16/17 were keyed on a graph missing step 8). Resume after the next quota reset (~12:30 IST tomorrow, after the deadline), or with a paid tier/second key: rerun acme from step 1; 11 calls expected.
