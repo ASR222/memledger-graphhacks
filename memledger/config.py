@@ -39,7 +39,7 @@ VALUE_SYNONYMS = {
 
 # Extraction (Gemini). EXTRACT_MODE: live | cache_only
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY") or None
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash")
 # Rate limits (429/503): calls per model before giving up, and an optional
 # model tried with the same policy once the main one is still rate-limited.
 GEMINI_MAX_RETRIES = int(os.getenv("GEMINI_MAX_RETRIES", "5"))
@@ -52,6 +52,20 @@ ALIASES = {
     "payments-api-service": "payments-api",
     "payment-api": "payments-api",
     "payments": "payments-api",
+    # value spellings seen from live Gemini (C3)
+    "signing-certificate-expired": "expired-signing-certificate",
+    "rotate-the-signing-certificate": "rotate-signing-certificate",
+    "connection-pool-exhausted-on-primary-db": "db-pool-exhaustion",
+    "connection-pool-exhausted": "db-pool-exhaustion",
+    "connection-pool-exhaustion": "db-pool-exhaustion",
+    "deploy-v2.3.1": "bad-deploy-v2.3.1",
+    "roll-back-to-v2.3.0": "rollback-to-v2.3.0",
+    "ddos-from-1.2.3.4": "ddos",
+    "block-1.2.3.4-at-the-edge": "block-1.2.3.4-at-edge",
+    "block-it-at-the-edge": "block-1.2.3.4-at-edge",  # "DDoS from 1.2.3.4, block it at the edge"
+    "block-it-at-edge": "block-1.2.3.4-at-edge",
+    "redis-cluster-down": "redis-outage",
+    "flush-cache-on-all-nodes": "flush-cache",
 }
 
 # Deepest provenance chain followed by revoke() and why().
