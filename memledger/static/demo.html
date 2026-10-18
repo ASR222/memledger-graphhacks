@@ -6,8 +6,8 @@
 <title>MemLedger · Demo and guide</title>
 <meta name="description" content="MemLedger: shared memory for incident-response agents, stored as a graph in FalkorDB. Every belief has a writer, a source, a validity window and a path, so one compromised source can be revoked everywhere in one query.">
 <link rel="icon" href="data:,">
-<link rel="stylesheet" href="/static/style.css?v=ui2">
-<link rel="stylesheet" href="/static/demo.css?v=ui2">
+<link rel="stylesheet" href="/static/style.css?v=ui3">
+<link rel="stylesheet" href="/static/demo.css?v=ui3">
 </head>
 <body class="page">
 <div class="sky" aria-hidden="true"><div class="stars"></div><div class="stars-2"></div><div class="grid"></div><div class="glow violet"></div><div class="glow cobalt"></div></div>
@@ -20,16 +20,21 @@
       <span class="wordmark">MemLedger</span>
       <span class="tagline">Shared memory you can audit and retract</span>
     </a>
-    <nav class="nav" aria-label="Sections">
+    <nav class="nav" id="siteNav" aria-label="Sections">
       <a href="#how">How it works</a>
       <a href="#story">The story</a>
-      <a href="#guide">User guide</a>
+      <a href="#guide">Guide</a>
       <a href="#run">Run it</a>
       <a href="#eval">Evaluation</a>
       <a href="#faq">FAQ</a>
     </nav>
-    <div class="modes" id="liveModes" aria-live="polite"></div>
-    <a class="btn primary" href="/">Open console <span aria-hidden="true">→</span></a>
+    <div class="actions">
+      <div class="modes" id="liveModes" aria-live="polite"></div>
+      <a class="btn primary" href="/">Open console <span aria-hidden="true">→</span></a>
+      <button class="menu-toggle" type="button" aria-controls="siteNav" aria-expanded="false" aria-label="Open menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
   </div>
 </header>
 
@@ -340,6 +345,6 @@ python -m memledger.mcp_server --http --port 8001  <span class="c"># streamable 
   </div>
 </footer>
 
-<script src="/static/demo.js?v=ui2"></script>
+<script src="/static/demo.js?v=ui3"></script>
 </body>
 </html>

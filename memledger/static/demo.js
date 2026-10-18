@@ -270,14 +270,49 @@ async function liveModes() {
     const dot = document.createElement("span");
     dot.className = "pulse";
     dot.setAttribute("aria-hidden", "true");
-    pill.append(dot, `extract: ${h.extract} · agents: ${h.agents}`);
+    const label = document.createElement("span");
+    label.className = "label";
+    label.textContent = `extract: ${h.extract} · agents: ${h.agents}`;
+    pill.title = `${label.textContent} (from /api/health)`;
+    pill.append(dot, label);
     el.replaceChildren(pill);
   } catch {
     el.textContent = "";
   }
 }
 
+/* header: the hamburger below 1100px, and the section you're reading marked in the nav */
+function headerNav() {
+  const nav = document.getElementById("siteNav");
+  const btn = document.querySelector(".menu-toggle");
+  if (!nav) return;
+  const close = () => { nav.classList.remove("open"); btn?.setAttribute("aria-expanded", "false"); btn?.setAttribute("aria-label", "Open menu"); };
+  btn?.addEventListener("click", () => {
+    const open = !nav.classList.contains("open");
+    nav.classList.toggle("open", open);
+    btn.setAttribute("aria-expanded", String(open));
+    btn.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+  });
+  nav.addEventListener("click", (e) => { if (e.target.closest("a")) close(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
+  const links = [...nav.querySelectorAll('a[href^="#"]')];
+  const byId = new Map(links.map((a) => [a.getAttribute("href").slice(1), a]));
+  const mark = (id) => links.forEach((a) => {
+    const on = a === byId.get(id);
+    a.classList.toggle("on", on);
+    if (on) a.setAttribute("aria-current", "true"); else a.removeAttribute("aria-current");
+  });
+  if (!("IntersectionObserver" in window)) return;
+  const io = new IntersectionObserver((entries) => {
+    const seen = entries.filter((e) => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+    if (seen.length) mark(seen[0].target.id);
+    else if (window.scrollY < 200) mark(null);
+  }, { rootMargin: "-64px 0px -60% 0px" });
+  byId.forEach((_, id) => { const s = document.getElementById(id); if (s) io.observe(s); });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
+  headerNav();
   mountVideo();
   document.querySelectorAll("[data-watcher]").forEach((el) =>
     watcher(el, { size: Number(el.dataset.size) || 34, shape: el.dataset.shape || "Cube", follow: 70 }));
