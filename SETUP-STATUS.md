@@ -27,7 +27,7 @@ Statuses: `todo` · `in-progress` · `review` · `done` · `blocked`. Owner is a
 | C2c | Fix queries.SEED so all Sources are created on real FalkorDB 6.x (found in C6) | C2a | done | claude | main | memledger/queries.py; memledger/schema.py; tests/test_patch.py; README.md; docs/bench-results.txt | 2026-10-17 22:42 |
 | C3 | Live run with Gemini: try_extract, demo live, fix aliases/expectations, commit the extraction cache | C2a | done | claude | main | data/.extract_cache.json; memledger/config.py; data/acme/scenario.json; data/globex/scenario.json | 2026-10-18 02:35 |
 | C4 | Cross-agent revoke cascade in the scenario (SCN.md §9) | C3 | todo | - | - | data/acme/scenario.json; memledger/scenario.py; data/acme/eval_questions.json; tests/test_scenario.py; tests/test_eval.py | - |
-| C5 | Deploy to Cloud Run (DEP.md) and pass smoke.py --full | C3; D-VENDOR | in-progress | claude | main | resource:cloud-run | 2026-10-18 05:50 |
+| C5 | Deploy to Cloud Run (DEP.md) and pass smoke.py --full | C3; D-VENDOR | done | claude | main | resource:cloud-run | 2026-10-18 06:02 |
 | C6 | Benchmark against real FalkorDB 6.x; save the output | D-TEN | done | claude | main | resource:bench-db; docs/bench-results.txt | 2026-10-17 22:40 |
 | C7 | Write README intro, numbers, AI_DISCLOSURE in your own words | C1; C3; C5; C6 | todo | - | - | README.md; AI_DISCLOSURE.md | - |
 | C8 | Rehearse explaining the model and queries (SUB.md §3) | D-SUB | todo | - | - | - | - |
@@ -84,3 +84,40 @@ Append one line per change, newest last: `YYYY-MM-DD HH:MM owner: what changed`.
 - 2026-10-18 04:27 claude: claimed C10 on main
 - 2026-10-18 04:41 claude: C10 -> done (tests: 173 passed, 1 skipped (test_collab deselected); acme: 26/31 live (extract live, agents offline; was 20/31): step 8 now stores root_cause=redis-outage, but flush-cache mitigation still missing -> steps 8/10/11/14 fail + step 9 soft; flash daily quota exhausted so every call fell back to flash-lite at once (no sleeps), and lite drops the recommended action (flash returned it in a probe); cache not committed (lite answers under flash key, agent texts carry random fact ids); changed: extract.py prompt ext-v2 (input-stream scope, keep claims that disagree with KNOWN VALUES, recommended action = mitigation) + COMPAT_PROMPT_VERSIONS reuses non-empty ext-v1 cache; llm_retry.is_daily_quota -> no retry; scenario.Runner reports agent 429/503 as a failed hard check; follow-up: when flash quota resets rerun demo --extract live (step 8 webhook) and commit cache; next: C4)
 - 2026-10-18 05:50 claude: claimed C5 on main
+- 2026-10-18 06:02 claude: C5 -> done (live: https://memledger-720170616128.asia-south1.run.app; smoke.py --full PASS (19 steps, 0 failed); region asia-south1; project multi-agent-ai-platform-a63ca; image asia-south1-docker.pkg.dev/multi-agent-ai-platform-a63ca/memledger/memledger:0baea84; EXTRACT=golden, AGENTS=offline, no Gemini key; next: step 8 cache rebuild (agents offline), then redeploy with EXTRACT=cache; C7)
+- 2026-10-18 11:35 claude: C5 deploy details. Public demo is deployed WITHOUT a Gemini key: no secret, no GEMINI_* env var, nothing in the image. scripts/deploy.sh was NOT used (it requires a key and grants IAM); deviation approved by the project lead. Built locally and pushed instead of `--source`, so Cloud Build stays disabled and no build IAM changed. New resources only: Artifact Registry repo `memledger` (asia-south1), service account `memledger-run` (no roles), Cloud Run service `memledger`. Nothing existing (cortex-* services, secrets, IAM) was touched.
+  - Image tag: `asia-south1-docker.pkg.dev/multi-agent-ai-platform-a63ca/memledger/memledger:0baea84` (commit 0baea84; contains data/.extract_cache.json with 41 entries; no .env, no data/.demo_state.json).
+  - Build and push: `docker build -t $IMG . && docker push $IMG`
+  - Deploy command (exact): `gcloud run deploy memledger --project=multi-agent-ai-platform-a63ca --region=asia-south1 --image=asia-south1-docker.pkg.dev/multi-agent-ai-platform-a63ca/memledger/memledger:0baea84 --service-account=memledger-run@multi-agent-ai-platform-a63ca.iam.gserviceaccount.com --allow-unauthenticated --min-instances=0 --max-instances=1 --cpu=1 --memory=512Mi --cpu-boost --timeout=300 --concurrency=40 --set-env-vars=MEMLEDGER_EXTRACT=golden,MEMLEDGER_AGENTS=offline,MEMLEDGER_ALLOW_RESET=1,MEMLEDGER_EMBEDDED_DB=1`
+  - Cold start (Cloud Run logs, revision memledger-00001-82z): instance start 06:00:43.31Z, tenants seeded 06:00:46.43Z, STARTUP TCP probe passed 06:00:47.57Z on the first attempt = 4.3 s, against the default probe budget of 240 s (TCP, period 240 s, failureThreshold 1). cpu-boost on. Startup only seeds the tenants; the story is replayed on request, not at startup. Local: 1.3 s, memory ~81 MiB of 512 MiB.
+  - Smoke output (`python scripts/smoke.py https://memledger-720170616128.asia-south1.run.app --full`):
+        Smoke test: https://memledger-720170616128.asia-south1.run.app
+          ✓ console page  679 ms
+          ✓ graph library served
+          ✓ health  {'ok': True, 'extract': 'golden', 'agents': 'offline', 'allow_reset': True}  165 ms
+          ✓ tenants reachable (database connected)  185 ms
+          ✓ tenant acme has a scenario
+          ✓ tenant globex has a scenario
+          ✓ globex: reset  HTTP 200
+          ✓ globex step  1 observe           306 ms
+          ✓ globex step  2 observe           196 ms
+          ✓ globex step  3 status_update     204 ms
+          ✓ globex step  4 isolation         175 ms
+          ✓ acme: reset  HTTP 200
+          ✓ acme step  1 observe           232 ms
+          ✓ acme step  2 observe           220 ms
+          ✓ acme step  3 investigate       181 ms
+          ✓ acme step  4 status_update     185 ms
+          ✓ acme step  5 observe           230 ms
+          ✓ acme step  6 investigate       263 ms
+          ✓ acme step  7 observe           200 ms
+          ✓ acme step  8 observe           266 ms
+          ✓ acme step  9 status_update     223 ms
+          ✓ acme step 10 preview           186 ms
+          ✓ acme step 11 revoke            233 ms
+          ✓ acme step 12 status_update     210 ms
+          ✓ acme step 13 ask               208 ms
+          ✓ acme step 14 as_of             173 ms
+          ✓ acme step 15 isolation         223 ms
+        PASS
+- 2026-10-18 11:36 claude: FINDING for the acme step 8 session. The extraction cache key includes the KNOWN VALUES in the graph at that step (extract.py Extractor.key). The committed cache came from C3's run with --agents live, so with --agents offline (what the public deploy uses) acme steps 5, 7 and 8 miss the cache -> extraction_failed (verified: demo.py --extract cache --agents offline fails at [5, 7, 8]; smoke --full fails the same way). That is why C5 is deployed with EXTRACT=golden. To switch the deploy to EXTRACT=cache, build the cache with `demo.py --tenant acme --extract live --agents offline --reset --all` (and globex likewise), commit data/.extract_cache.json, confirm `demo.py --extract cache --agents offline` passes for both tenants, then rebuild the image and redeploy with MEMLEDGER_EXTRACT=cache.
