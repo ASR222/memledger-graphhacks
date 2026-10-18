@@ -33,6 +33,7 @@ Statuses: `todo` · `in-progress` · `review` · `done` · `blocked`. Owner is a
 | C8 | Rehearse explaining the model and queries (SUB.md §3) | D-SUB | todo | - | - | - | - |
 | C9 | Gemini rate-limit resilience: retry 429 honoring retryDelay, backoff, fallback model | D-SUB | done | claude | main | memledger/llm_retry.py; memledger/extract.py; memledger/agents/llm.py; memledger/config.py; tests/test_llm_retry.py | 2026-10-17 22:59 |
 | C10 | C3 follow-ups: relax incident-scope prompt rule, daily-quota fast fallback, agent 429 no crash | C3; C9 | done | claude | main | memledger/extract.py; memledger/llm_retry.py; memledger/scenario.py; scripts/demo.py; data/.extract_cache.json; tests/test_extract.py; tests/test_llm_retry.py; tests/test_scenario.py | 2026-10-18 04:41 |
+| D-SCN2 | Update docs/SCN.md (timeline §2, §9) for acme steps 16-20 (C4) | C4 | in-progress | claude | main | docs/SCN.md | 2026-10-18 06:14 |
 | V1 | Record the 3-minute video (SUB.md §6) | C5; C7 | todo | - | - | resource:cloud-run | - |
 | V2 | Submit on WeMakeDevs, Track 02 (SUB.md §8 checklist) | V1; C8 | todo | - | - | - | - |
 
@@ -125,3 +126,5 @@ Append one line per change, newest last: `YYYY-MM-DD HH:MM owner: what changed`.
 - 2026-10-18 11:50 claude: C4 locks += data/acme/alerts_s3.json; data/acme/golden_claims.json (new forged-alert input and its golden claims)
 - 2026-10-18 12:00 claude: C4 locks += tests/test_api.py (its full-demo test hard-codes 15 acme steps)
 - 2026-10-18 06:11 claude: C4 -> done (tests: 174 passed, 1 skipped (test_collab deselected); acme steps 16-20 (session s3) added after step 15: forged checkout-api alert on the alerts feed (triage) -> investigator failover conclusion citing it (offline_parent) -> preview alerts: radius spans triage 3, investigator 1, comms 1 (step-4 status derived from the step-1 alert facts) -> revoke alerts withdraws exactly the preview's 5 facts, runbook facts stand -> comms rebuilds status from survivors. Steps 1-15 and their cache keys unchanged. New extraction calls in cache/live mode: 3 (step 16 alerts_s3.json, step 17 investigator text, step 20 comms text); golden needs none. scenario.py: OfflineChat.parent + expect key radius_agents. Not changed: eval questions (scores unchanged), docs/SCN.md (§2 timeline/§9 still describe 15 steps). Deployed demo still runs 15 steps until the next redeploy; next: step 8 cache rebuild with --agents offline --all (now 20 steps) then redeploy; C7)
+- 2026-10-18 11:46 claude: redeployed 20-step acme on golden: revision memledger-00002-wqr, image asia-south1-docker.pkg.dev/multi-agent-ai-platform-a63ca/memledger/memledger:5100cd6, same flags/env (golden, offline, no key); smoke.py --full PASS incl. acme steps 16-20
+- 2026-10-18 06:14 claude: claimed D-SCN2 on main
