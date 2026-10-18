@@ -4,7 +4,7 @@
 /* ── the demo video ──────────────────────────────────────────
    Paste the YouTube link here (watch?v=, youtu.be/, /embed/ or
    /shorts/ all work). Empty shows a placeholder in the hero. */
-const DEMO_VIDEO = "";
+const DEMO_VIDEO = "https://youtu.be/8IQ9ViRFXNU";
 
 function youtubeId(url) {
   if (!url) return null;
