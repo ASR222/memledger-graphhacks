@@ -119,6 +119,15 @@ def create_app(extract: str | None = None, agents: str | None = None, *, extract
         allow_reset = os.getenv("MEMLEDGER_ALLOW_RESET", "1") == "1"
 
     app = FastAPI(title="MemLedger", version="1.0")
+
+    @app.middleware("http")
+    async def revalidate_ui(request, call_next):
+        # pages and their CSS/JS must never be served stale after a deploy
+        resp = await call_next(request)
+        path = request.url.path
+        if path in ("/", "/demo") or (path.startswith("/static/") and path.endswith((".css", ".js", ".html"))):
+            resp.headers["Cache-Control"] = "no-cache"
+        return resp
     cache: dict = {"extractors": {}, "llm": llm}
 
     def scenario(tenant: str) -> dict | None:

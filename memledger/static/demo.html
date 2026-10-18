@@ -6,16 +6,19 @@
 <title>MemLedger · Demo and guide</title>
 <meta name="description" content="MemLedger: shared memory for incident-response agents, stored as a graph in FalkorDB. Every belief has a writer, a source, a validity window and a path, so one compromised source can be revoked everywhere in one query.">
 <link rel="icon" href="data:,">
-<link rel="stylesheet" href="/static/demo.css">
+<link rel="stylesheet" href="/static/style.css?v=ui2">
+<link rel="stylesheet" href="/static/demo.css?v=ui2">
 </head>
-<body>
+<body class="page">
+<div class="sky" aria-hidden="true"><div class="stars"></div><div class="stars-2"></div><div class="grid"></div><div class="glow violet"></div><div class="glow cobalt"></div></div>
 <a class="skip" href="#main">Skip to content</a>
 
 <header class="top">
   <div class="wrap">
     <a class="brand" href="/demo" aria-label="MemLedger demo home">
-      <span data-watcher data-size="34" data-shape="Cube"></span>
-      MemLedger
+      <span data-watcher data-size="28" data-shape="Cube"></span>
+      <span class="wordmark">MemLedger</span>
+      <span class="tagline">Shared memory you can audit and retract</span>
     </a>
     <nav class="nav" aria-label="Sections">
       <a href="#how">How it works</a>
@@ -25,6 +28,7 @@
       <a href="#eval">Evaluation</a>
       <a href="#faq">FAQ</a>
     </nav>
+    <div class="modes" id="liveModes" aria-live="polite"></div>
     <a class="btn primary" href="/">Open console <span aria-hidden="true">→</span></a>
   </div>
 </header>
@@ -59,7 +63,6 @@
       <div class="stat"><b>20 steps</b><span>a three-session incident, scripted end to end</span></div>
       <div class="stat"><b>1 query</b><span>revokes a source and everything derived from it</span></div>
     </div>
-    <p class="live-modes" id="liveModes"></p>
   </div>
 </section>
 
@@ -159,8 +162,22 @@ RETURN f.id AS id, f.subject AS subject, f.predicate AS predicate,
           <tr class="session"><td colspan="4">Session 3 · cross-agent cascade</td></tr>
           <tr><td class="n">16</td><td class="n">16:00</td><td>observe <code>alerts</code></td><td>An alert says checkout-api is failing too; Triage records it</td></tr>
           <tr><td class="n">17</td><td class="n">16:05</td><td>investigate</td><td>The Investigator concludes a checkout-api failover from Triage's fact</td></tr>
-          <tr class="hl"><td class="n">18</td><td class="n">16:20</td><td>preview <code>alerts</code></td><td>The alert feed's token leaked. Its blast radius now spans <span class="pill agent">all three agents</span></td></tr>
-          <tr class="hl"><td class="n">19</td><td class="n">16:21</td><td>revoke <code>alerts</code></td><td>One revoke withdraws Triage's facts, the Investigator's failover and Comms' status; the runbook's facts stand</td></tr>
+          <tr class="hl"><td class="n">18</td><td class="n">16:20</td><td>preview <code>alerts</code></td><td>The alert feed's token leaked. Its blast radius now spans all three agents, each ringed in its writer's colour:
+            <div class="cascade" aria-label="Step 18 blast radius by writer">
+              <span class="fact radius a-triage"><span>affects_service = checkout-api</span></span>
+              <span class="fact radius a-triage"><span>affects_service = payments-api</span></span>
+              <span class="fact radius a-triage"><span>severity = sev1</span></span>
+              <span class="fact radius a-investigator"><span>mitigation = fail-over-checkout-api-to-the-standby-database</span></span>
+              <span class="fact radius a-comms"><span>status = mitigating</span></span>
+            </div></td></tr>
+          <tr class="hl"><td class="n">19</td><td class="n">16:21</td><td>revoke <code>alerts</code></td><td>One revoke withdraws Triage's facts, the Investigator's failover and Comms' status; the runbook's facts stand:
+            <div class="cascade" aria-label="Step 19 revoked facts">
+              <span class="fact gone"><span>affects_service = checkout-api</span></span>
+              <span class="fact gone"><span>affects_service = payments-api</span></span>
+              <span class="fact gone"><span>severity = sev1</span></span>
+              <span class="fact gone"><span>mitigation = fail-over-checkout-api-to-the-standby-database</span></span>
+              <span class="fact gone"><span>status = mitigating</span></span>
+            </div></td></tr>
           <tr><td class="n">20</td><td class="n">16:25</td><td>status update</td><td>Comms rebuilds the status from what survives</td></tr>
         </tbody>
       </table>
@@ -323,6 +340,6 @@ python -m memledger.mcp_server --http --port 8001  <span class="c"># streamable 
   </div>
 </footer>
 
-<script src="/static/demo.js"></script>
+<script src="/static/demo.js?v=ui2"></script>
 </body>
 </html>

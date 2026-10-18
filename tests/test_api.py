@@ -151,3 +151,14 @@ def test_demo_page_is_served(client):
     for f in ("demo.js", "demo.css"):
         assert client.get(f"/static/{f}").status_code == 200
     assert "/demo" not in client.get("/openapi.json").json()["paths"]
+
+
+def test_ui_shares_the_design_and_revalidates(client):
+    """UI1: / and /demo load the one stylesheet, and pages + CSS/JS are never cached stale."""
+    for page in ("/", "/demo"):
+        r = client.get(page)
+        assert "/static/style.css" in r.text and 'class="sky"' in r.text and "wordmark" in r.text
+        assert r.headers["cache-control"] == "no-cache"
+    for f in ("style.css", "app.js", "demo.css", "demo.js"):
+        assert client.get(f"/static/{f}").headers["cache-control"] == "no-cache"
+

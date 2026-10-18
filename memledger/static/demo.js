@@ -65,7 +65,7 @@ const LINES = [
   "Stop poking me.", "I'm watching you.", "Again? Okay.", "You found me.",
   "I remember who said that.", "Revoked. All of it.",
 ];
-const TINTS = ["#8f7cff", "#3ecf8e", "#5ab0ff"];
+const TINTS = ["#a78bfa", "#60a5fa", "#34d399"];
 const KEY_MS = 38;
 const HOLD_MS = 1500;
 
@@ -264,7 +264,14 @@ async function liveModes() {
   if (!el) return;
   try {
     const h = await (await fetch("/api/health")).json();
-    el.textContent = `This deployment: extract ${h.extract} · agents ${h.agents}`;
+    const pill = document.createElement("span");
+    pill.className = "status-pill";
+    pill.title = "Modes reported by /api/health";
+    const dot = document.createElement("span");
+    dot.className = "pulse";
+    dot.setAttribute("aria-hidden", "true");
+    pill.append(dot, `extract: ${h.extract} · agents: ${h.agents}`);
+    el.replaceChildren(pill);
   } catch {
     el.textContent = "";
   }
