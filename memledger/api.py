@@ -352,6 +352,10 @@ def create_app(extract: str | None = None, agents: str | None = None, *, extract
         def index():
             return FileResponse(STATIC / "index.html")
 
+        @app.get("/demo", include_in_schema=False)
+        def demo_page():
+            return FileResponse(STATIC / "demo.html")
+
     return app
 
 

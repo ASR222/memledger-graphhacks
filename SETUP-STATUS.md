@@ -36,7 +36,7 @@ Statuses: `todo` · `in-progress` · `review` · `done` · `blocked`. Owner is a
 | D-SCN2 | Update docs/SCN.md (timeline §2, §9) for acme steps 16-20 (C4) | C4 | done | claude | main | docs/SCN.md | 2026-10-18 06:15 |
 | C12 | Cache safety before C11: never cache fallback-model answers under the main model's key; check C10 v1-reuse impact on acme 5/7/8/16/17/20 | C10; C4 | done | claude | main | memledger/extract.py; memledger/llm_retry.py; tests/test_llm_retry.py; tests/test_extract.py; scripts/demo.py | 2026-10-18 06:23 |
 | C11 | Fill extraction cache for the deployed config (acme --extract live --agents offline on gemini-3.5-flash, no fallback); redeploy with EXTRACT=cache | C12 | blocked | claude | main | data/.extract_cache.json; resource:cloud-run | 2026-10-18 07:28 |
-| C13 | /demo landing page: YouTube demo hero, user guide, project info; eye-tracker (Watcher) in the header | C5 | in-progress | claude | main | memledger/static/demo.html; memledger/static/demo.css; memledger/static/demo.js; memledger/api.py; tests/test_api.py | 2026-10-18 09:38 |
+| C13 | /demo landing page: YouTube demo hero, user guide, project info; eye-tracker (Watcher) in the header | C5 | done | claude | main | memledger/static/demo.html; memledger/static/demo.css; memledger/static/demo.js; memledger/api.py; tests/test_api.py | 2026-10-18 09:43 |
 | V1 | Record the 3-minute video (SUB.md §6) | C5; C7 | todo | - | - | resource:cloud-run | - |
 | V2 | Submit on WeMakeDevs, Track 02 (SUB.md §8 checklist) | V1; C8 | todo | - | - | - | - |
 
@@ -153,3 +153,4 @@ Append one line per change, newest last: `YYYY-MM-DD HH:MM owner: what changed`.
   - Fix option B: strip [f-...] citations from the text in both Extractor.key and evidence validation, so agent-text answers replay across runs. Smaller, contained in extract.py.
   - After either fix: rerun C11 (~7 calls) reusing the step 3/5/6/7 entries in data/.cache_c11_partial.json (git-ignored locally), replay acme and globex, then redeploy with MEMLEDGER_EXTRACT=cache.
 - 2026-10-18 09:38 claude: claimed C13 on main
+- 2026-10-18 09:43 claude: C13 -> done (tests: 176 passed, 1 skipped (test_collab deselected); /demo landing page (demo.html/css/js): YouTube hero (set DEMO_VIDEO at the top of static/demo.js; empty shows a placeholder), problem, graph model + memory rules + the REVOKE query, the 20-step INC-42 story, console user guide + walkthrough, local setup, modes, API + MCP, eval scorecard (16/16 vs 8, verified with scripts/eval.py golden/offline), limits/FAQ. Header has the Watcher eye tracker ported to vanilla JS (no build step). Route GET /demo in api.py; test_demo_page_is_served. Not screenshot-verified (headless Chromium lacks libnss3 here). Not deployed yet: redeploy after the video URL is set.)

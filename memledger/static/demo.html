@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MemLedger · Demo and guide</title>
+<meta name="description" content="MemLedger: shared memory for incident-response agents, stored as a graph in FalkorDB. Every belief has a writer, a source, a validity window and a path, so one compromised source can be revoked everywhere in one query.">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="/static/demo.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="/demo" aria-label="MemLedger demo home">
+      <span data-watcher data-size="34" data-shape="Cube"></span>
+      MemLedger
+    </a>
+    <nav class="nav" aria-label="Sections">
+      <a href="#how">How it works</a>
+      <a href="#story">The story</a>
+      <a href="#guide">User guide</a>
+      <a href="#run">Run it</a>
+      <a href="#eval">Evaluation</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <a class="btn primary" href="/">Open console <span aria-hidden="true">→</span></a>
+  </div>
+</header>
+
+<main id="main">
+
+<!-- ── hero ───────────────────────────────────────────────── -->
+<section class="hero">
+  <div class="wrap">
+    <div class="eyebrow">GraphHacks 2026 · Track 02 · Built on FalkorDB</div>
+    <h1>Memory you can <em>audit and retract.</em></h1>
+    <p class="lede">MemLedger is shared memory for a team of incident-response agents, stored as a graph in FalkorDB.
+      Every belief records who wrote it, where it came from, when it was true and what it was based on.
+      So when a source turns out to be compromised, one query withdraws everything it said, and everything built on it, across every agent.</p>
+    <div class="ctas">
+      <a class="btn primary" href="/">Open the live console <span aria-hidden="true">→</span></a>
+      <a class="btn" href="#guide">Read the user guide</a>
+      <a class="btn" href="https://github.com/rudrakshSoni-dev/memledger-graphhacks" rel="noopener">Source on GitHub</a>
+    </div>
+
+    <div class="video" id="video">
+      <div class="video-empty">
+        <div class="play" aria-hidden="true"></div>
+        <strong>Demo video coming soon</strong>
+        <span>Three minutes: the INC-42 story, start to finish, in the live console.</span>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><b>16 / 16</b><span>eval questions answered (best baseline: 8)</span></div>
+      <div class="stat"><b>3 agents</b><span>Triage, Investigator and Comms share one graph</span></div>
+      <div class="stat"><b>20 steps</b><span>a three-session incident, scripted end to end</span></div>
+      <div class="stat"><b>1 query</b><span>revokes a source and everything derived from it</span></div>
+    </div>
+    <p class="live-modes" id="liveModes"></p>
+  </div>
+</section>
+
+<!-- ── problem ────────────────────────────────────────────── -->
+<section class="block" id="why">
+  <div class="wrap">
+    <div class="eyebrow">The problem</div>
+    <h2>Most multi-agent memory is a shared log where the last write wins.</h2>
+    <p class="intro">Agents append what they learn and read back the newest value. That's simple, and it breaks in exactly the moments that matter in an incident:</p>
+    <div class="grid g3">
+      <div class="card"><span class="tag">wrong winner</span><h3>A forwarded email says "resolved"</h3><p>In our test, a shared log told stakeholders the incident was resolved because a forwarded message said so. A newer claim isn't a truer one.</p></div>
+      <div class="card"><span class="tag">no provenance</span><h3>You can't tell who said what</h3><p>When a log entry is wrong, there's no record of which agent wrote it, which input it came from, or what it was used to conclude.</p></div>
+      <div class="card"><span class="tag">no undo</span><h3>Deleting a bad source loses history</h3><p>The obvious fix, deleting everything from a revoked source, also deletes the audit trail and leaves conclusions built on it standing.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── how it works ───────────────────────────────────────── -->
+<section class="block" id="how">
+  <div class="wrap">
+    <div class="eyebrow">How it works</div>
+    <h2>Beliefs are nodes. Provenance is edges.</h2>
+    <p class="intro">Every tenant gets its own graph in FalkorDB. A belief is a <code>Fact</code> node (subject, predicate, value) with a status and a validity window. The edges around it say who wrote it, which source it came from, and which other facts it was derived from.</p>
+
+    <div class="card">
+      <svg class="schema" viewBox="0 0 860 250" role="img" aria-labelledby="schemaT">
+        <title id="schemaT">Graph model: an Agent WROTE a Fact; the Fact is FROM_SOURCE a Source; a Fact can be DERIVED_FROM another Fact and SUPERSEDES an older one; an Episode LOGGED the Fact.</title>
+        <defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#5b6576"/></marker></defs>
+        <rect class="n agent" x="20" y="95" width="130" height="56" rx="10"/><text x="85" y="121" text-anchor="middle">Agent</text><text class="lbl" x="85" y="139" text-anchor="middle">triage · investigator · comms</text>
+        <rect class="n fact" x="330" y="95" width="200" height="56" rx="28"/><text x="430" y="121" text-anchor="middle">Fact</text><text class="lbl" x="430" y="139" text-anchor="middle">root_cause = bad-deploy-v2.3.1</text>
+        <rect class="n source" x="710" y="95" width="130" height="56" rx="10"/><text x="775" y="121" text-anchor="middle">Source</text><text class="lbl" x="775" y="139" text-anchor="middle">runbook · trust 0.9</text>
+        <rect class="n fact" x="330" y="10" width="200" height="44" rx="22"/><text class="lbl" x="430" y="37" text-anchor="middle">an older Fact (closed)</text>
+        <rect class="n fact" x="330" y="196" width="200" height="44" rx="22"/><text class="lbl" x="430" y="223" text-anchor="middle">a conclusion (Fact)</text>
+        <rect class="n episode" x="20" y="10" width="130" height="44" rx="10"/><text x="85" y="37" text-anchor="middle">Episode</text>
+        <path class="e" d="M150 123 H326"/><text class="lbl" x="238" y="115" text-anchor="middle">WROTE</text>
+        <path class="e" d="M530 123 H706"/><text class="lbl" x="618" y="115" text-anchor="middle">FROM_SOURCE</text>
+        <path class="e sup" d="M430 95 V58"/><text class="lbl" x="440" y="80">SUPERSEDES</text>
+        <path class="e derived" d="M430 196 V155"/><text class="lbl" x="440" y="180">DERIVED_FROM</text>
+        <path class="e" d="M150 40 C 240 40, 260 100, 326 112"/><text class="lbl" x="200" y="62">LOGGED</text>
+      </svg>
+    </div>
+
+    <h3>The memory rules</h3>
+    <div class="grid g2">
+      <div class="card"><span class="tag">supersession</span><h3>Close, never overwrite</h3><p>Single-valued predicates (<code>root_cause</code>, <code>status</code>, <code>owner</code>, <code>severity</code>) have one active value. A correction <span class="pill closed">closes</span> the old fact and links the new one with <code>SUPERSEDES</code>, so the history stays queryable. Multi-valued predicates (<code>affects_service</code>, <code>mitigation</code>) accumulate.</p></div>
+      <div class="card"><span class="tag">trust and quarantine</span><h3>Untrusted claims wait outside</h3><p>Each source has a trust score. Claims from sources below 0.5, and hedged claims ("possibly the cause") even from trusted ones, land in <span class="pill quarantined">quarantine</span>. They show up as disputes, aren't believed, and an operator can promote them.</p></div>
+      <div class="card"><span class="tag">roles</span><h3>Agents may only write their predicates</h3><p>Triage writes severity, impact and status. The Investigator writes root cause, mitigation, impact and owner. Comms writes status. A prompt-injected "mark it resolved" from an Investigator input is dropped as <code>not_permitted</code>.</p></div>
+      <div class="card"><span class="tag">revocation</span><h3>One traversal withdraws a source</h3><p>Revoking a source marks it compromised and walks <code>FROM_SOURCE</code> and <code>DERIVED_FROM</code> up to six hops, so conclusions built on its claims are <span class="pill revoked">revoked</span> too. Facts are kept with <code>valid_to</code> set: nothing is deleted.</p></div>
+      <div class="card"><span class="tag">staleness</span><h3>Reasoning knows when its basis moved</h3><p>A conclusion whose parent is no longer active is flagged as stale, and the Investigator rules it out. That's how "raise the pool size" goes away once the pool is shown to be a symptom.</p></div>
+      <div class="card"><span class="tag">time travel and tenancy</span><h3>Ask what you believed at 13:55</h3><p>Validity windows answer "what did the team believe then?" without replaying logs. Every customer is its own graph (<code>memory_&lt;tenant&gt;</code>), so nothing crosses tenants.</p></div>
+    </div>
+
+    <h3>The revoke, in full</h3>
+    <p class="intro">This is the actual query (all Cypher lives in <code>memledger/queries.py</code>):</p>
+<pre><code>MATCH (s:Source {id:$source})
+SET s.compromised = true
+WITH s
+MATCH (s)&lt;-[:FROM_SOURCE|DERIVED_FROM*1..6]-(f:Fact)
+WHERE f.status IN ['active','quarantined']
+WITH DISTINCT f
+SET f.revoked_from = f.status, f.status = 'revoked', f.valid_to = $now
+WITH f
+OPTIONAL MATCH (a:Agent)-[w:WROTE]->(f)
+WHERE w.corroborates IS NULL
+RETURN f.id AS id, f.subject AS subject, f.predicate AS predicate,
+       f.object AS object, a.id AS writer</code></pre>
+  </div>
+</section>
+
+<!-- ── story ──────────────────────────────────────────────── -->
+<section class="block" id="story">
+  <div class="wrap">
+    <div class="eyebrow">The demo story</div>
+    <h2>INC-42: payments-api latency spike</h2>
+    <p class="intro">Tenant <code>acme</code>, three sessions, five input sources, three agents. Each session starts a new process with empty chats; everything carries over through the graph. A second tenant, <code>globex</code>, runs its own incident to show isolation.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>Time</th><th>Step</th><th>What happens</th></tr></thead>
+        <tbody>
+          <tr class="session"><td colspan="4">Session 1 · morning</td></tr>
+          <tr><td class="n">1</td><td class="n">09:58</td><td>observe <code>alerts</code></td><td>Triage records payments-api impact and SEV-1 <span class="pill active">active</span></td></tr>
+          <tr><td class="n">2</td><td class="n">10:04</td><td>observe <code>app-logs</code></td><td>Root cause: DB connection pool exhaustion</td></tr>
+          <tr><td class="n">3</td><td class="n">10:06</td><td>investigate</td><td>The Investigator concludes "raise the pool size", citing that root cause</td></tr>
+          <tr><td class="n">4</td><td class="n">10:10</td><td>status update</td><td>Comms writes an update; every claim cites a fact id</td></tr>
+          <tr class="session"><td colspan="4">Session 2 · afternoon</td></tr>
+          <tr><td class="n">5</td><td class="n">13:30</td><td>observe <code>runbook</code></td><td>Real cause: deploy v2.3.1. The pool cause is <span class="pill closed">closed</span>, not overwritten; rollback and owner added</td></tr>
+          <tr><td class="n">6</td><td class="n">13:35</td><td>investigate</td><td>The pool-size fix is stale (its basis is closed) and gets ruled out</td></tr>
+          <tr><td class="n">7</td><td class="n">13:40</td><td>observe <code>fwd-logs</code></td><td>A forwarded "DDoS" claim with a prompt injection: <span class="pill quarantined">quarantined</span> and <span class="pill dispute">disputed</span>; "mark resolved" dropped by role</td></tr>
+          <tr><td class="n">8</td><td class="n">13:45</td><td>observe <code>webhook</code></td><td>A trusted cache integration: its hedged "Redis outage" is quarantined, its "flush cache" becomes a mitigation</td></tr>
+          <tr><td class="n">9</td><td class="n">13:50</td><td>status update</td><td>Mentions the flush; the DDoS only as unconfirmed</td></tr>
+          <tr class="hl"><td class="n">10</td><td class="n">14:20</td><td>preview <code>webhook</code></td><td>The cache integration is compromised: preview its blast radius</td></tr>
+          <tr class="hl"><td class="n">11</td><td class="n">14:21</td><td>revoke <code>webhook</code></td><td>Flush and Redis outage <span class="pill revoked">revoked</span>; deploy and rollback still active</td></tr>
+          <tr><td class="n">12</td><td class="n">14:25</td><td>status update</td><td>The next update drops the flush</td></tr>
+          <tr><td class="n">13</td><td class="n">14:30</td><td>ask "why?"</td><td>Root cause traced to the runbook, replacing the pool cause</td></tr>
+          <tr><td class="n">14</td><td class="n">14:31</td><td>time travel to 13:55</td><td>The team did believe the flush then; history is kept</td></tr>
+          <tr><td class="n">15</td><td class="n">14:32</td><td>isolation vs <code>globex</code></td><td>No facts cross tenants</td></tr>
+          <tr class="session"><td colspan="4">Session 3 · cross-agent cascade</td></tr>
+          <tr><td class="n">16</td><td class="n">16:00</td><td>observe <code>alerts</code></td><td>An alert says checkout-api is failing too; Triage records it</td></tr>
+          <tr><td class="n">17</td><td class="n">16:05</td><td>investigate</td><td>The Investigator concludes a checkout-api failover from Triage's fact</td></tr>
+          <tr class="hl"><td class="n">18</td><td class="n">16:20</td><td>preview <code>alerts</code></td><td>The alert feed's token leaked. Its blast radius now spans <span class="pill agent">all three agents</span></td></tr>
+          <tr class="hl"><td class="n">19</td><td class="n">16:21</td><td>revoke <code>alerts</code></td><td>One revoke withdraws Triage's facts, the Investigator's failover and Comms' status; the runbook's facts stand</td></tr>
+          <tr><td class="n">20</td><td class="n">16:25</td><td>status update</td><td>Comms rebuilds the status from what survives</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ── user guide ─────────────────────────────────────────── -->
+<section class="block" id="guide">
+  <div class="wrap">
+    <div class="eyebrow">User guide</div>
+    <h2>Using the operator console</h2>
+    <p class="intro">The console at <a href="/">/</a> shows the memory graph live while the story runs. Here's every part of it.</p>
+
+    <div class="tour">
+      <div class="card"><h3>Header</h3><p>Pick a <b>tenant</b> (<code>acme</code> or <code>globex</code>); its incident id appears next to it. The chips on the right show the modes this server runs in: <code>extract</code>, <code>agents</code> and whether reset is allowed.</p></div>
+      <div class="card"><h3>Scripted demo</h3><p><b>Reset</b> wipes and re-seeds the tenant. <b>Next step</b> runs one step of the story. The narration line says what's happening, and the dots show progress and which checks passed.</p></div>
+      <div class="card"><h3>Feed</h3><p>Each step adds an entry: what was stored, what was dropped and why, and for agent steps, the text they wrote. <b>Citation chips</b> like <code>[f-…]</code> are clickable.</p></div>
+      <div class="card"><h3>Memory graph</h3><p>Facts are circles colored by status: <span class="pill active">active</span> <span class="pill quarantined">quarantined</span> <span class="pill closed">closed</span> <span class="pill revoked">revoked</span>. Squares are <span class="pill agent">agents</span> and <span class="pill source">sources</span>. Click a fact to open its Why panel.</p></div>
+      <div class="card"><h3>Why panel</h3><p>For any fact: who wrote it, from which source, what it replaced, and the path of facts it was derived from. The path is highlighted in the graph.</p></div>
+      <div class="card"><h3>Time travel</h3><p>Drag the slider at the bottom to see what the team believed at any moment. <b>Live</b> jumps back to now.</p></div>
+      <div class="card"><h3>Sources tab</h3><p>Every source with its trust bar, a <span class="pill active">trusted</span> / <span class="pill quarantined">untrusted</span> / <span class="pill revoked">compromised</span> badge and counts of active, quarantined and revoked facts. <b>Preview revoke</b> lists the blast radius before you commit; <b>Revoke</b> applies it.</p></div>
+      <div class="card"><h3>Quarantine tab and Ask</h3><p>Quarantined facts wait here with a <b>Promote</b> button for an operator to confirm one. <b>Ask an agent</b> sends a question to Comms, the Investigator or Triage in a session; answers cite facts.</p></div>
+    </div>
+
+    <h3>A five-minute walkthrough</h3>
+    <ol class="tight">
+      <li>Open the <a href="/">console</a>, choose <code>acme</code> and press <b>Reset</b>.</li>
+      <li>Press <b>Next step</b> four times. At step 4, click a citation chip in Comms' update to open the Why panel.</li>
+      <li>Steps 5 to 8: watch the pool cause turn <span class="pill closed">closed</span>, the DDoS land in quarantine, and the webhook's hedged guess stay out.</li>
+      <li>Step 10 previews the webhook's blast radius; step 11 revokes it. Compare the status updates at steps 9 and 12.</li>
+      <li>Step 13 asks "why?"; step 14 moves the clock to 13:55. Try the slider yourself.</li>
+      <li>Steps 16 to 19 are the cascade: one revoke of <code>alerts</code> reaches facts written by all three agents.</li>
+      <li>Open the <b>Sources</b> tab and preview a revoke of your own, or ask an agent a question.</li>
+    </ol>
+    <div class="note"><b>The public demo is shared.</b> Everyone who opens it steps the same tenants, and there's no login. If the story looks out of order, someone else is using it: press <b>Reset</b>. The server scales to zero when idle, so the first request after a quiet spell takes a few seconds and starts from empty tenants.</div>
+  </div>
+</section>
+
+<!-- ── run it ─────────────────────────────────────────────── -->
+<section class="block" id="run">
+  <div class="wrap">
+    <div class="eyebrow">Run it yourself</div>
+    <h2>Local setup in a few commands</h2>
+    <p class="intro">You need Python 3.12. Docker is optional: the server can run FalkorDB embedded. No API key is needed for the offline modes.</p>
+
+    <h3>1. Install</h3>
+<pre data-copy><code>git clone https://github.com/rudrakshSoni-dev/memledger-graphhacks.git
+cd memledger-graphhacks
+python -m venv .venv &amp;&amp; source .venv/bin/activate
+pip install -r requirements.txt</code></pre>
+
+    <h3>2. Start the console (embedded FalkorDB, no Gemini calls)</h3>
+<pre data-copy><code>MEMLEDGER_EMBEDDED_DB=1 MEMLEDGER_EXTRACT=golden MEMLEDGER_AGENTS=offline \
+  python -m memledger.serve
+<span class="c"># then open http://localhost:8080 (console) and http://localhost:8080/demo (this page)</span></code></pre>
+
+    <h3>3. Or run the story in the terminal</h3>
+<pre data-copy><code>docker compose up -d            <span class="c"># FalkorDB on localhost:6379</span>
+python scripts/demo.py --list   <span class="c"># the steps and their narration</span>
+python scripts/demo.py --tenant acme --extract golden --agents offline --reset --all</code></pre>
+
+    <h3>4. Go live with Gemini (optional)</h3>
+<pre data-copy><code>echo "GEMINI_API_KEY=your-key" &gt; .env
+python scripts/try_extract.py data/acme/alerts_s3.json      <span class="c"># 1 extraction call</span>
+python scripts/demo.py --tenant acme --extract live --agents offline --reset --all</code></pre>
+    <div class="note">Free-tier Gemini keys have small daily limits. A live acme run with offline agents makes about a dozen extraction calls; live agents make many more. Rate limits are retried with backoff, and <code>GEMINI_FALLBACK_MODEL</code> can name a second model to try.</div>
+
+    <h3>Modes</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Setting</th><th>Value</th><th>What it does</th><th>Gemini calls</th></tr></thead>
+        <tbody>
+          <tr><td><code>MEMLEDGER_EXTRACT</code></td><td><code>golden</code></td><td>Replays hand-written reference extractions from <code>golden_claims.json</code></td><td>none</td></tr>
+          <tr><td></td><td><code>cache</code></td><td>Replays extractions saved by an earlier live run</td><td>none (a miss fails the claim)</td></tr>
+          <tr><td></td><td><code>live</code></td><td>Calls Gemini with a strict JSON schema, then validates every claim against the text</td><td>one per input</td></tr>
+          <tr><td><code>MEMLEDGER_AGENTS</code></td><td><code>offline</code></td><td>Deterministic stand-ins that follow each role's rules</td><td>none</td></tr>
+          <tr><td></td><td><code>live</code></td><td>Gemini agents in a tool loop (recall, conclude, why, disputes…)</td><td>several per step</td></tr>
+          <tr><td><code>MEMLEDGER_EMBEDDED_DB</code></td><td><code>1</code></td><td>FalkorDB inside the process; data is lost on restart</td><td>n/a</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="intro" style="margin-top:14px">Run the tests with <code>python -m pytest -q</code>. They use embedded FalkorDB and fake models, so they need no Docker and no key.</p>
+  </div>
+</section>
+
+<!-- ── API and MCP ────────────────────────────────────────── -->
+<section class="block" id="api">
+  <div class="wrap">
+    <div class="eyebrow">Interfaces</div>
+    <h2>HTTP API and MCP server</h2>
+    <div class="grid g2">
+      <div class="card">
+        <h3>HTTP API</h3>
+        <p>Everything the console does goes through these routes (interactive docs at <a href="/docs">/docs</a>):</p>
+        <ul class="tight">
+          <li><b>Read:</b> <code>GET /api/{tenant}/facts</code>, <code>/graph</code>, <code>/facts/{id}/why</code>, <code>/as_of?t=&lt;ms&gt;</code>, <code>/disputes</code>, <code>/stale</code>, <code>/sources</code>, <code>/quarantine</code>, <code>/history/{session}</code></li>
+          <li><b>Trust:</b> <code>GET …/sources/{source}/blast-radius</code>, <code>POST …/revoke</code>, <code>PUT …/trust</code>, <code>POST /facts/{id}/promote</code></li>
+          <li><b>Agents:</b> <code>POST /api/{tenant}/observe</code>, <code>/investigate</code>, <code>/status-update</code>, <code>/ask</code></li>
+          <li><b>Demo:</b> <code>GET /api/{tenant}/demo</code>, <code>POST …/demo/next</code>, <code>POST …/demo/reset</code></li>
+          <li><b>Ops:</b> <code>GET /api/health</code>, <code>GET /api/tenants</code></li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>MCP server</h3>
+        <p>Claude Desktop, Claude Code or any MCP client can read the same memory with the same rules. Eight read-only tools:</p>
+        <ul class="tight">
+          <li><code>list_incidents</code>, <code>current_beliefs</code>, <code>explain_fact</code>, <code>beliefs_at</code></li>
+          <li><code>stale_conclusions</code>, <code>source_trust</code>, <code>blast_radius</code>, <code>session_history</code></li>
+        </ul>
+<pre data-copy><code>python -m memledger.mcp_server                     <span class="c"># stdio</span>
+python -m memledger.mcp_server --http --port 8001  <span class="c"># streamable HTTP</span></code></pre>
+        <p style="margin-top:10px">No write tools by design: an outside client has no agent identity, role or source in the trust model, so revoke and promote stay operator actions.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── evaluation ─────────────────────────────────────────── -->
+<section class="block" id="eval">
+  <div class="wrap">
+    <div class="eyebrow">Evaluation</div>
+    <h2>Four memory designs, sixteen questions</h2>
+    <p class="intro">The same claim stream from the acme story is fed to four memory designs, and each is asked 16 questions at checkpoints, with exact expected answers. Each question targets a trap: a newer but untrusted claim, a prompt-injected status, a hedged guess, a revoked source, a time-travel query.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Design</th><th>What it is</th><th>Score</th></tr></thead>
+        <tbody>
+          <tr><td>A. No shared memory</td><td>Each session sees only its own claims</td><td class="score">4 / 16</td></tr>
+          <tr><td>B. Shared log, last write wins</td><td>One append-only log for every agent and session</td><td class="score">5 / 16</td></tr>
+          <tr><td>C. Log + trust filter + delete on revoke</td><td>B with the obvious fixes: drop low-trust claims, delete a revoked source's claims</td><td class="score">8 / 16</td></tr>
+          <tr><td><b>D. MemLedger</b></td><td>Supersession, quarantine, retraction, taint revocation, validity windows</td><td class="score"><b>16 / 16</b></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note">This is a feature-by-feature demonstration with a reproducible scorecard, not a benchmark: we designed the scenario, the questions and the baselines, and the questions target what MemLedger was built for. Reproduce it with <code>python scripts/eval.py --embedded --extract golden --agents offline</code>.</div>
+  </div>
+</section>
+
+<!-- ── honesty / FAQ ──────────────────────────────────────── -->
+<section class="block" id="faq">
+  <div class="wrap">
+    <div class="eyebrow">Limits and FAQ</div>
+    <h2>What's real, and what isn't yet</h2>
+    <div class="note ok"><b>About this deployment.</b> The public demo runs on reference extractions and offline agents, so visitors never spend API quota and every run is the same. The extraction and agent code paths have also been run live with Gemini during development, and the value aliases were tuned from those runs. The header chips on the console always show which modes a server is in.</div>
+    <details><summary>Is the graph really in FalkorDB?</summary><p>Yes. Every node and edge in the console is read from FalkorDB with Cypher. The public deployment runs FalkorDB embedded in the container; locally you can use the <code>falkordb/falkordb</code> Docker image. Concurrency was benchmarked against FalkorDB 6.0.2 with zero errors and no cross-tenant leaks.</p></details>
+    <details><summary>Why are the genuine morning alerts revoked in step 19?</summary><p>Revocation is source-wide by design: once the alert feed's token is known to be leaked, nothing it said can be trusted, including older alerts. The facts are kept with their history, and confirmed facts from other sources stand.</p></details>
+    <details><summary>What about procedural memory?</summary><p>Not built. MemLedger covers episodic memory (logged episodes) and semantic memory (facts). Procedural memory is out of scope for this version.</p></details>
+    <details><summary>Does data survive a restart?</summary><p>Not on the public demo: embedded FalkorDB lives in the container, so a restart starts from empty, freshly seeded tenants. Press Reset and step through again. With an external FalkorDB the graph persists.</p></details>
+    <details><summary>Known issue: replaying a live run from cache</summary><p>Fact ids are random and agents cite them in their text, so extractions of agent text can't yet be replayed from cache across runs. Two fixes are planned after submission: deterministic fact ids, or stripping citations before caching.</p></details>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>MemLedger · built for GraphHacks 2026, Track 02 · FalkorDB + Gemini</span>
+    <span><a href="/">Console</a> · <a href="/docs">API docs</a> · <a href="https://github.com/rudrakshSoni-dev/memledger-graphhacks" rel="noopener">GitHub</a></span>
+  </div>
+</footer>
+
+<script src="/static/demo.js"></script>
+</body>
+</html>

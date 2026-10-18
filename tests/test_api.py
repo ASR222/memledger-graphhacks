@@ -139,3 +139,15 @@ def test_ui_is_served(client):
     assert "/static/vendor/force-graph.min.js" in html and "/static/app.js" in html
     for f in ("app.js", "style.css", "vendor/force-graph.min.js"):
         assert client.get(f"/static/{f}").status_code == 200
+
+
+def test_demo_page_is_served(client):
+    """C13: /demo is the landing page: video hero, guide, and the header eye tracker."""
+    r = client.get("/demo")
+    assert r.status_code == 200 and "text/html" in r.headers["content-type"]
+    html = r.text
+    assert 'id="video"' in html and "data-watcher" in html and 'id="guide"' in html
+    assert "/static/demo.css" in html and "/static/demo.js" in html
+    for f in ("demo.js", "demo.css"):
+        assert client.get(f"/static/{f}").status_code == 200
+    assert "/demo" not in client.get("/openapi.json").json()["paths"]
