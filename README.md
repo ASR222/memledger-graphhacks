@@ -4,7 +4,7 @@
 
 GraphHacks 2026 (WeMakeDevs × FalkorDB) · **Track 02: Agent Memory and Coordination**
 
-- **Live demo:** TODO(you): Cloud Run URL (say which database mode it uses, see [Deployment](#deployment))
+- **Live demo:** [memledger-720170616128.asia-south1.run.app/demo](https://memledger-720170616128.asia-south1.run.app/demo) (Cloud Run)
 - **Demo video:** [youtube.com/watch?v=xmPvyoq3y0s](https://www.youtube.com/watch?v=xmPvyoq3y0s)
 - **AI assistance:** most of the code was written with an AI assistant; see [AI_DISCLOSURE.md](AI_DISCLOSURE.md)
 
